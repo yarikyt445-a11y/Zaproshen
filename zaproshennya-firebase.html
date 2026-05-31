@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>У вас нове повідомлення</title>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="У вас нове повідомлення"/>
+<meta property="og:description" content="Натисніть щоб відкрити"/>
+<meta property="og:image" content="https://files.catbox.moe/0m8wur.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="У вас нове повідомлення"/>
+<meta name="twitter:description" content="Натисніть щоб відкрити"/>
+<meta name="twitter:image" content="https://files.catbox.moe/0m8wur.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<!-- ╔══════════════════════════════════════════════════════╗
+     ║  Firebase SDK — не видаляйте ці два рядки!          ║
+     ╚══════════════════════════════════════════════════════╝ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#18120a;--paper:#faf6f0;--warm:#f0e8d8;--card:#fff;
+  --gold:#c9922a;--gold-light:#f5e8c8;
+  --green:#2d7a4f;--green-bg:#e8f5ee;
+  --red:#c0392b;--red-bg:#fdecea;
+  --muted:#9a8e82;--border:rgba(180,140,60,.2);
+  --shadow:0 4px 32px rgba(0,0,0,.08);
+}
+html,body{min-height:100vh;background:var(--paper)}
+body{font-family:'DM Sans',sans-serif;color:var(--ink);overflow-x:hidden}
+button{cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+input,textarea,select{font-family:'DM Sans',sans-serif;font-size:1rem;background:transparent;border:none;border-bottom:1.5px solid var(--border);color:var(--ink);width:100%;padding:7px 2px;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-bottom-color:var(--gold)}
+select option{background:var(--paper)}
+textarea{resize:vertical;min-height:88px;line-height:1.65}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes confetti-fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(250,246,240,.95);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;
+}
+.logo{background:none;border:none;font-family:'Playfair Display',serif;font-style:italic;font-size:1.35rem;color:var(--ink);cursor:pointer;letter-spacing:.02em}
+.topbar nav{display:flex;gap:8px}
+.nb{background:none;color:var(--muted);border:1px solid var(--border);border-radius:30px;padding:6px 18px;font-size:.82rem}
+.nb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.wrap{max-width:680px;margin:0 auto;padding:44px 24px;animation:fadeUp .45s ease both}
+
+.inv-card{
+  background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+  padding:16px 20px;margin-bottom:12px;cursor:pointer;
+  display:flex;align-items:center;gap:14px;
+  transition:box-shadow .2s,transform .15s,border-color .2s;
+  animation:fadeUp .4s ease both;
+}
+.inv-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.inv-card.status-accepted{border-left:4px solid var(--green)}
+.inv-card.status-declined{border-left:4px solid var(--red)}
+.inv-card.status-pending{border-left:4px solid var(--gold)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;letter-spacing:.06em;border-radius:20px;padding:3px 10px;font-weight:500}
+.badge-pending{background:rgba(201,146,42,.12);color:#a07018}
+.badge-accepted{background:var(--green-bg);color:var(--green)}
+.badge-declined{background:var(--red-bg);color:var(--red)}
+
+.pill{background:none;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:5px 15px;font-size:.8rem;transition:all .2s}
+.pill.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+
+.lbl{display:block;font-size:.7rem;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+.btn{border:none;border-radius:12px;padding:14px;font-size:1rem;width:100%;font-weight:500;letter-spacing:.02em}
+.btn-dark{background:var(--ink);color:var(--paper)}
+.btn-dark:hover{background:#2d2418}
+.btn-dark:disabled{background:var(--warm);color:var(--muted);cursor:not-allowed}
+.btn-yes{background:var(--green);color:#fff;border-radius:14px;padding:15px;font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;width:100%;border:none}
+.btn-yes:hover{background:#236040;transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,122,79,.3)}
+.btn-no{background:none;color:var(--red);border:1.5px solid rgba(192,57,43,.3);border-radius:14px;padding:14px;font-size:1rem;width:100%}
+.btn-no:hover{background:var(--red-bg)}
+.btn-outline{background:none;border:1px solid var(--border);border-radius:30px;padding:8px 20px;color:var(--muted);font-size:.88rem}
+
+.div-line{display:flex;align-items:center;gap:12px;margin:20px 0;opacity:.35}
+.div-line::before,.div-line::after{content:'';flex:1;height:1px;background:var(--gold)}
+.div-line i{font-size:.6rem;color:var(--gold);font-style:normal}
+
+.invite-bg{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px 16px;
+  background:radial-gradient(ellipse at 20% 20%, rgba(201,146,42,.07) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 80%, rgba(45,122,79,.06) 0%, transparent 60%),
+             var(--paper);
+}
+.invite-envelope{
+  max-width:460px;width:100%;
+  background:var(--card);
+  border-radius:20px;
+  box-shadow:0 12px 60px rgba(0,0,0,.1);
+  overflow:hidden;
+  animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.envelope-top{
+  background:linear-gradient(135deg,#1a120a 0%,#2d2010 100%);
+  padding:32px 32px 28px;
+  text-align:center;
+  position:relative;
+}
+.envelope-top::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:20px;
+  background:var(--card);
+  clip-path:ellipse(55% 100% at 50% 100%);
+}
+.envelope-emoji{font-size:3rem;display:block;margin-bottom:8px;animation:heartbeat 2s ease-in-out infinite}
+.envelope-type{font-size:.68rem;letter-spacing:.18em;color:rgba(255,255,255,.5);text-transform:uppercase;font-weight:500;margin-bottom:6px}
+.envelope-to{font-family:'Playfair Display',serif;font-style:italic;font-size:2rem;color:#fff;font-weight:400}
+
+.envelope-body{padding:28px 32px 32px}
+
+.msg-block{
+  background:var(--warm);border-radius:12px;
+  padding:18px 20px;margin-bottom:22px;
+  border-left:3px solid var(--gold);
+  position:relative;
+}
+.msg-block::before{
+  content:'\201C';font-family:'Playfair Display',serif;
+  font-size:3.5rem;color:var(--gold);opacity:.25;
+  position:absolute;top:-8px;left:12px;line-height:1;
+}
+.msg-text{font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;line-height:1.7;color:var(--ink);padding-left:8px}
+
+.detail-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.detail-row:last-child{border-bottom:none}
+.detail-icon{font-size:1.1rem;width:28px;text-align:center;flex-shrink:0}
+.detail-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;min-width:52px}
+.detail-value{font-size:1rem;color:var(--ink);font-weight:500}
+
+.answer-wrap{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+
+.result-screen{text-align:center;padding:12px 0 4px}
+.result-icon{font-size:3.5rem;margin-bottom:10px;display:block;animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+.result-title{font-family:'Playfair Display',serif;font-size:1.7rem;margin-bottom:8px}
+.result-sub{color:var(--muted);font-size:.95rem;line-height:1.5}
+
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:999;animation:confetti-fall linear forwards}
+
+.overlay{position:fixed;inset:0;background:rgba(18,12,6,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.modal{background:var(--paper);border-radius:16px;max-width:440px;width:100%;padding:28px;border:1px solid var(--border);animation:fadeUp .3s ease;max-height:90vh;overflow-y:auto}
+
+.link-box{background:var(--warm);border-radius:10px;padding:14px 16px;border:1px solid var(--border)}
+.link-text{font-size:.72rem;font-family:monospace;word-break:break-all;color:var(--ink);margin-bottom:10px;line-height:1.5;user-select:all}
+
+.copy-ok{background:var(--green)!important;color:#fff!important}
+
+.empty{text-align:center;padding:64px 0;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:14px;opacity:.5}
+
+/* Індикатор з'єднання Firebase */
+.fb-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--muted);
+  display:inline-block;margin-right:5px;transition:background .4s;
+}
+.fb-dot.ok{background:var(--green)}
+.fb-dot.err{background:var(--red)}
+
+
+/* ── Значок сповіщення ── */
+.notif-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--red);color:#fff;
+  font-size:.65rem;font-weight:700;font-family:'DM Sans',sans-serif;
+  width:17px;height:17px;border-radius:50%;
+  position:absolute;top:-5px;right:-7px;
+  animation:pop .3s cubic-bezier(.34,1.56,.64,1) both;
+  pointer-events:none;
+}
+.pill-wrap{position:relative;display:inline-block}
+
+/* ── Кнопка перенесення ── */
+.btn-reschedule{
+  background:rgba(201,146,42,.1);color:var(--gold);
+  border:1.5px solid rgba(201,146,42,.35);border-radius:14px;
+  padding:13px;font-size:.95rem;width:100%;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;
+}
+.btn-reschedule:hover{background:rgba(201,146,42,.18)}
+
+/* ── Форма перенесення ── */
+.reschedule-form{
+  background:var(--warm);border-radius:14px;padding:18px;
+  margin-top:14px;border:1px solid var(--border);
+  animation:fadeUp .3s ease both;
+}
+.reschedule-form input{
+  border:1px solid var(--border);border-radius:8px;
+  padding:9px 12px;background:#fff;margin-top:0;
+}
+
+/* ── Badge перенесення ── */
+.badge-reschedule{background:rgba(201,146,42,.12);color:#a07018}
+@media(max-width:480px){
+  .topbar{padding:0 16px}.wrap{padding:28px 16px}
+  .grid2{grid-template-columns:1fr}
+  .envelope-top,.envelope-body{padding-left:20px;padding-right:20px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║  FIREBASE — вставте сюди конфіг зі свого Firebase Console               ║
+// ║  console.firebase.google.com → ваш проект → Project Settings →          ║
+// ║  "Your apps" → Web app → firebaseConfig                                 ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCesCx1QMSuvKZe8trbJANIiikm3ncASnI",
+  authDomain:        "zaproshennya-a1ea7.firebaseapp.com",
+  databaseURL:       "https://zaproshennya-a1ea7-default-rtdb.firebaseio.com",
+  projectId:         "zaproshennya-a1ea7",
+  storageBucket:     "zaproshennya-a1ea7.firebasestorage.app",
+  messagingSenderId: "474356200698",
+  appId:             "1:474356200698:web:5a2d9c83240dfd44070543"
+};
+// ══════════════════════════════════════════════════════════════════════════
+
+// ─── Firebase init ─────────────────────────────────────────────────────────
+let db = null;
+try {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.database();
+} catch(e) { console.warn('Firebase init:', e.message); }
+
+// Записати статус в Firebase
+async function fbWrite(invId, status) {
+  if (!db) return;
+  try { await db.ref('statuses/' + invId).set(status); }
+  catch(e) { console.warn('fbWrite:', e); }
+}
+
+// Слухач: автоматично оновлює список запрошень у відправника в реальному часі
+function listenFirebase() {
+  if (!db) return;
+  const dot = () => document.querySelector('.fb-dot');
+  db.ref('statuses').on('value',
+    snap => {
+      if (dot()) { dot().className = 'fb-dot ok'; }
+      const remote = snap.val() || {};
+      const list = loadAll();
+      let changed = false;
+      list.forEach(inv => {
+        const rs = remote[inv.id];
+        if (rs && rs !== inv.status) {
+          // Надіслати push якщо отримали нову відповідь
+          if (rs === 'accepted') {
+            sendPushNotification('✓ Запрошення прийнято!', `${inv.to} погодився прийти!`);
+          } else if (rs === 'declined') {
+            sendPushNotification('✕ Запрошення відхилено', `${inv.to} не зможе прийти`);
+          } else if (rs === 'reschedule') {
+            sendPushNotification('↕ Запит на перенесення', `${inv.to} хоче перенести зустріч`);
+          }
+          inv.status = rs;
+          changed = true;
+        }
+      });
+      if (changed) {
+        saveAll(list);
+        if (parseHash().page === 'home') render();
+      }
+    },
+    err => { if (dot()) dot().className = 'fb-dot err'; console.warn('FB listen:', err); }
+  );
+}
+
+// ─── Storage ───────────────────────────────────────────────────────────────
+const KEY = 'zap_v6';
+const loadAll = () => { try { return JSON.parse(localStorage.getItem(KEY)||'[]'); } catch { return []; } };
+const saveAll = l => localStorage.setItem(KEY, JSON.stringify(l));
+const genId   = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-5);
+
+// ─── Types ─────────────────────────────────────────────────────────────────
+const TYPES = [
+  {v:'date',    l:'Побачення',       e:'🌹'},
+  {v:'walk',    l:'Прогулянка',      e:'🍃'},
+  {v:'birthday',l:'День народження', e:'🎂'},
+  {v:'party',   l:'Свято / Вечірка', e:'🥂'},
+  {v:'cinema',  l:'Кіно',            e:'🎬'},
+  {v:'coffee',  l:'Кава',            e:'☕'},
+  {v:'travel',  l:'Подорож',         e:'✈️'},
+  {v:'other',   l:'Інше',            e:'✨'},
+];
+const TM = Object.fromEntries(TYPES.map(t=>[t.v,t]));
+
+// ─── Invite link — короткий ID замість Base64 ─────────────────────────────
+// Посилання: site.netlify.app/#i/abc1234  (тільки 7 символів)
+// Повні дані зберігаються у Firebase: invites/{id}
+
+function inviteLink(inv) {
+  return location.href.split('#')[0] + '#i/' + inv.id;
+}
+
+// Зберегти дані запрошення у Firebase (щоб отримувач міг прочитати)
+async function fbSaveInvite(inv) {
+  if (!db) return;
+  try {
+    await db.ref('invites/' + inv.id).set({
+      id:inv.id, to:inv.to, type:inv.type,
+      date:inv.date, time:inv.time,
+      place:inv.place||'', msg:inv.msg||''
+    });
+  } catch(e) { console.warn('fbSaveInvite:', e); }
+}
+
+// Завантажити дані запрошення з Firebase по ID
+async function fbLoadInvite(id) {
+  if (!db) return null;
+  try {
+    const snap = await db.ref('invites/' + id).get();
+    return snap.exists() ? snap.val() : null;
+  } catch(e) { console.warn('fbLoadInvite:', e); return null; }
+}
+
+// Старі функції — залишаємо для сумісності зі старими посиланнями (Base64)
+function encodeInvite(inv) {
+  const data = { id:inv.id, to:inv.to, type:inv.type, date:inv.date, time:inv.time, place:inv.place||'', msg:inv.msg||'' };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+}
+function decodeInvite(b64) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(b64)))); } catch { return null; }
+}
+
+// ─── State ─────────────────────────────────────────────────────────────────
+let S = { page:'home', filter:'all', modal:null };
+
+// ─── Router ────────────────────────────────────────────────────────────────
+function parseHash() {
+  const h = location.hash.slice(1);
+  if (h.startsWith('i/')) {
+    const val = h.slice(2);
+    // Короткий ID: ≤14 символів, без = та +
+    const isShortId = val.length <= 14 && !/[=+/]/.test(val);
+    return { page:'invite', inviteId: isShortId ? val : null, b64: isShortId ? null : val };
+  }
+  if (h === 'create') return { page:'create' };
+  return { page:'home' };
+}
+
+function go(page, extra) {
+  if (page === 'invite' && extra) location.hash = 'i/' + extra;
+  else if (page === 'create')     location.hash = 'create';
+  else                            location.hash = '';
+  S.modal = null;
+}
+
+window.addEventListener('hashchange', render);
+
+// ─── Utils ─────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function copyText(text, btn) {
+  const flash = () => {
+    if(!btn) return;
+    btn.classList.add('copy-ok');
+    const t = btn.textContent;
+    btn.textContent = '✓ Скопійовано!';
+    setTimeout(()=>{ btn.classList.remove('copy-ok'); btn.textContent = t; }, 2400);
+  };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(flash).catch(()=>{ legacyCopy(text); flash(); });
+  else { legacyCopy(text); flash(); }
+}
+function legacyCopy(text) {
+  const el = Object.assign(document.createElement('textarea'),{value:text});
+  el.style.cssText='position:fixed;opacity:0';
+  document.body.appendChild(el); el.focus(); el.select();
+  try{document.execCommand('copy')}catch{}
+  document.body.removeChild(el);
+}
+
+function badge(status) {
+  const MAP = {
+    pending:    ['badge-pending',   '⏳','Очікує'],
+    accepted:   ['badge-accepted',  '✓','Прийнято'],
+    declined:   ['badge-declined',  '✕','Відхилено'],
+    reschedule: ['badge-reschedule','↕','Перенесення'],
+  };
+  const [cls,icon,label] = MAP[status]||MAP.pending;
+  return `<span class="badge ${cls}">${icon} ${label}</span>`;
+}
+
+function divLine(){ return `<div class="div-line"><i>✦</i></div>`; }
+
+// ─── Confetti ──────────────────────────────────────────────────────────────
+function boom() {
+  const colors = ['#c9922a','#2d7a4f','#e05c5c','#5a8fd4','#e8b84b','#6db87a'];
+  for(let i=0;i<60;i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left:${Math.random()*100}vw;top:-10px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      animation-duration:${1.5+Math.random()*2}s;
+      animation-delay:${Math.random()*.6}s;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', ()=>el.remove());
+  }
+}
+
+
+// ─── Лічильник нових сповіщень ─────────────────────────────────────────────
+// Зберігаємо які статуси вже бачили
+const SEEN_KEY = 'zap_seen_v1';
+function getSeenStatuses(){ try{ return JSON.parse(localStorage.getItem(SEEN_KEY)||'{}'); }catch{ return {}; } }
+function markAsSeen(id, status){ const s=getSeenStatuses(); s[id]=status; localStorage.setItem(SEEN_KEY,JSON.stringify(s)); }
+
+function countNewReplies() {
+  const seen = getSeenStatuses();
+  const list = loadAll();
+  return list.filter(inv =>
+    (inv.status === 'accepted' || inv.status === 'declined' || inv.status === 'reschedule') &&
+    seen[inv.id] !== inv.status
+  ).length;
+}
+
+function markAllSeen() {
+  const list = loadAll();
+  list.forEach(inv => {
+    if (inv.status !== 'pending') markAsSeen(inv.id, inv.status);
+  });
+}
+
+// ─── Push сповіщення ────────────────────────────────────────────────────────
+function requestPushPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function sendPushNotification(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        body,
+        icon: 'https://files.catbox.moe/0m8wur.png',
+        badge: 'https://files.catbox.moe/0m8wur.png',
+      });
+    } catch(e) { console.warn('Push:', e); }
+  }
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  const route = parseHash();
+
+  if (route.page === 'invite') {
+    if (route.inviteId) {
+      // Нове коротке посилання — завантажуємо дані з Firebase
+      app.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+        <div style="width:32px;height:32px;border:3px solid rgba(180,140,60,.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+      </div>`;
+      fbLoadInvite(route.inviteId).then(inv => {
+        if (!inv) {
+          app.innerHTML = `<div style="text-align:center;padding:80px 20px">
+            <div style="font-size:2rem;margin-bottom:12px">🍂</div>
+            <p style="color:var(--muted);font-size:1.1rem">Запрошення не знайдено</p>
+          </div>`;
+          return;
+        }
+        app.innerHTML = renderInvitePage(inv, null);
+      });
+      return;
+    }
+    // Старе Base64 посилання — зворотна сумісність
+    if (route.b64) {
+      const inv = decodeInvite(route.b64);
+      if (!inv) {
+        app.innerHTML = `<div style="text-align:center;padding:80px 20px">
+          <div style="font-size:2rem;margin-bottom:12px">🍂</div>
+          <p style="color:var(--muted);font-size:1.1rem">Посилання недійсне</p>
+        </div>`;
+        return;
+      }
+      app.innerHTML = renderInvitePage(inv, route.b64);
+      return;
+    }
+  }
+
+  app.innerHTML = `
+    ${renderTopbar(route.page)}
+    <div class="wrap">
+      ${ route.page==='create' ? renderCreate() : renderHome() }
+    </div>
+    ${ S.modal ? renderModal(S.modal) : '' }
+  `;
+}
+
+// ─── TOPBAR ────────────────────────────────────────────────────────────────
+function renderTopbar(page) {
+  const fbStatus = db
+    ? `<span title="Firebase підключено" style="font-size:.7rem;color:var(--muted);display:flex;align-items:center"><span class="fb-dot"></span>синх.</span>`
+    : `<span title="Firebase не налаштовано" style="font-size:.7rem;color:var(--red)">⚠ Firebase</span>`;
+  return `<header class="topbar">
+    <button class="logo" onclick="go('home')">Запрошення ✦</button>
+    <nav style="display:flex;align-items:center;gap:12px">
+      ${fbStatus}
+      <button class="nb ${page==='home'?'on':''}"   onclick="go('home')">Мої</button>
+      <button class="nb ${page==='create'?'on':''}" onclick="go('create')">+ Нове</button>
+    </nav>
+  </header>`;
+}
+
+// ─── HOME ──────────────────────────────────────────────────────────────────
+function renderHome() {
+  const list = loadAll();
+  const f = S.filter||'all';
+  const shown = f==='all' ? list : list.filter(i=>i.status===f);
+
+  return `
+  <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-style:italic;font-size:2.4rem;margin-bottom:6px">Мої запрошення</h1>
+  <p style="color:var(--muted);margin-bottom:26px;font-size:.95rem">Статуси оновлюються автоматично ✦</p>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px" id="filter-bar">
+    ${(()=>{
+      const newCount = countNewReplies();
+      const filters = [['all','Всі'],['pending','Очікують'],['accepted','Прийняті'],['declined','Відхилені'],['reschedule','Перенесення']];
+      return filters.map(([v,l]) => {
+        const isActive = f===v;
+        // Показуємо значок на "Всі" якщо є нові відповіді
+        const showBadge = v==='all' && newCount > 0;
+        return `<div class="pill-wrap">
+          <button class="pill ${isActive?'on':''}" onclick="setFilter('${v}')">${l}</button>
+          ${showBadge ? `<span class="notif-badge">${newCount}</span>` : ''}
+        </div>`;
+      }).join('');
+    })()}
+  </div>
+
+  ${ shown.length===0 ? `
+    <div class="empty">
+      <div class="empty-icon">✦</div>
+      <p style="font-style:italic;font-size:1.05rem;margin-bottom:18px">Ще немає запрошень</p>
+      <button class="btn btn-dark" style="width:auto;padding:10px 28px" onclick="go('create')">Створити перше</button>
+    </div>
+  ` : shown.map((inv,i) => `
+    <div class="inv-card status-${inv.status}" style="animation-delay:${i*40}ms" onclick="openModal('${inv.id}')">
+      <div style="font-size:1.8rem;flex-shrink:0">${(TM[inv.type]||TM.other).e}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+          <span style="font-weight:600;font-size:1rem">${esc(inv.to)}</span>
+          ${badge(inv.status)}
+        </div>
+        <div style="color:var(--muted);font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ${(TM[inv.type]||TM.other).l} · ${esc(inv.date)} ${esc(inv.time)}${inv.place?' · '+esc(inv.place):''}
+        </div>
+      </div>
+      <div onclick="event.stopPropagation()" style="flex-shrink:0">
+        <button id="copy-${inv.id}" onclick="doCopy('${inv.id}',this)"
+          style="background:var(--warm);border:none;border-radius:8px;padding:7px 13px;font-size:.8rem;color:var(--muted)">
+          🔗 Копіювати
+        </button>
+      </div>
+    </div>
+  `).join('') }
+  `;
+}
+
+function setFilter(f){
+  S.filter=f;
+  if(f!=='all') markAllSeen(); // позначаємо як переглянуті
+  render();
+}
+
+function doCopy(id, btn) {
+  const inv = loadAll().find(i=>i.id===id);
+  if (inv) copyText(inviteLink(inv), btn);
+}
+
+function openModal(id) {
+  S.modal = loadAll().find(i=>i.id===id)||null;
+  markAsSeen(id, S.modal?.status); // позначаємо як переглянуте
+  render();
+  // Якщо статус "reschedule" — завантажити деталі
+  if (S.modal?.status === 'reschedule' && db) {
+    db.ref('reschedule/'+id).get().then(snap => {
+      const el = document.getElementById('reschedule-info-'+id);
+      if (!el) return;
+      if (snap.exists()) {
+        const d = snap.val();
+        el.textContent = [d.date, d.time].filter(Boolean).join(' о ') || 'Без конкретної дати';
+      } else {
+        el.textContent = 'Деталі не вказані';
+      }
+    }).catch(()=>{});
+  }
+}
+
+// ─── CREATE ────────────────────────────────────────────────────────────────
+function renderCreate() {
+  const today = new Date().toISOString().split('T')[0];
+  return `
+  <h1 style="font-family:'Playfair Display',serif;font-weight:400;font-style:italic;font-size:2.2rem;margin-bottom:4px">Нове запрошення</h1>
+  <p style="color:var(--muted);margin-bottom:30px;font-size:.95rem">Заповніть деталі — посилання буде готове миттєво</p>
+
+  <div id="cform" style="display:flex;flex-direction:column;gap:24px">
+    <div>
+      <label class="lbl">Ваше повідомлення</label>
+      <textarea id="f-msg" placeholder="Напишіть своїми словами — що хочете, куди запрошуєте, чому це буде чудово…" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fff;font-size:1rem"></textarea>
+    </div>
+    <div>
+      <label class="lbl">Кому</label>
+      <input id="f-to" placeholder="Ім'я" oninput="chk()"/>
+    </div>
+    <div>
+      <label class="lbl">Куди / Тип події</label>
+      <select id="f-type">
+        ${TYPES.map(o=>`<option value="${o.v}">${o.e} ${o.l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="grid2">
+      <div><label class="lbl">Дата</label><input type="date" id="f-date" min="${today}" oninput="chk()"/></div>
+      <div><label class="lbl">Час</label><input type="time" id="f-time" oninput="chk()"/></div>
+    </div>
+    <div>
+      <label class="lbl">Місце</label>
+      <input id="f-place" placeholder="Адреса, назва кафе, парк…"/>
+    </div>
+    <button id="sbtn" class="btn btn-dark" disabled onclick="submitCreate()">Створити запрошення →</button>
+  </div>
+
+  <div id="cdone" style="display:none;animation:fadeUp .5s ease">
+    <div style="text-align:center;padding:10px 0 24px">
+      <div style="font-size:2.8rem;margin-bottom:12px">🎉</div>
+      <h2 style="font-family:'Playfair Display',serif;font-weight:400;font-style:italic;font-size:1.9rem;margin-bottom:8px">Готово!</h2>
+      <p style="color:var(--muted);margin-bottom:22px">Скопіюйте та надішліть це посилання:</p>
+    </div>
+    <div class="link-box" style="margin-bottom:14px">
+      <div class="link-text" id="done-link-text"></div>
+      <button id="done-copy-btn" onclick="copyText(document.getElementById('done-link-text').textContent.trim(), this)"
+        style="background:var(--ink);color:var(--paper);border:none;border-radius:10px;padding:11px;font-size:.9rem;width:100%">
+        🔗 Скопіювати посилання
+      </button>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:20px;font-style:italic">
+      Коли людина відповість — статус оновиться автоматично 🔄
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="resetCreate()" style="background:none;border:none;color:var(--muted);font-size:.9rem;text-decoration:underline;cursor:pointer">Ще одне</button>
+      <span style="color:var(--border)">·</span>
+      <button onclick="go('home')" style="background:none;border:none;color:var(--muted);font-size:.9rem;text-decoration:underline;cursor:pointer">← До списку</button>
+    </div>
+  </div>
+  `;
+}
+
+function chk(){
+  const btn = document.getElementById('sbtn');
+  if(!btn) return;
+  btn.disabled = !(document.getElementById('f-to')?.value.trim() &&
+                   document.getElementById('f-date')?.value &&
+                   document.getElementById('f-time')?.value);
+}
+
+function submitCreate(){
+  const inv = {
+    id:genId(),
+    to:   document.getElementById('f-to').value.trim(),
+    type: document.getElementById('f-type').value,
+    date: document.getElementById('f-date').value,
+    time: document.getElementById('f-time').value,
+    place:document.getElementById('f-place').value.trim(),
+    msg:  document.getElementById('f-msg').value.trim(),
+    status:'pending', created:Date.now(),
+  };
+  saveAll([inv,...loadAll()]);
+  // Зберігаємо повні дані у Firebase — щоб посилання було коротким
+  fbSaveInvite(inv);
+  document.getElementById('cform').style.display='none';
+  document.getElementById('cdone').style.display='block';
+  document.getElementById('done-link-text').textContent = inviteLink(inv);
+}
+
+function resetCreate(){
+  document.getElementById('cform').style.display='flex';
+  document.getElementById('cdone').style.display='none';
+  ['f-to','f-date','f-time','f-place'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const msg=document.getElementById('f-msg'); if(msg) msg.value='';
+  chk();
+}
+
+// ─── INVITE PAGE (для отримувача) ──────────────────────────────────────────
+function renderInvitePage(inv, b64) {
+  const t = TM[inv.type]||TM.other;
+
+  // Перевірка: чи вже відповідав на цьому пристрої?
+  const stored  = loadAll().find(i=>i.id===inv.id);
+  const answered = stored?.status==='accepted' || stored?.status==='declined';
+  const answer   = stored?.status;
+
+  return `
+  <div class="invite-bg">
+    <div class="invite-envelope">
+
+      <div class="envelope-top">
+        <span class="envelope-emoji">${t.e}</span>
+        <div class="envelope-type">${t.l}</div>
+        <div class="envelope-to">${esc(inv.to)}</div>
+      </div>
+
+      <div class="envelope-body">
+
+        ${ inv.msg ? `
+        <div class="msg-block">
+          <p class="msg-text">${esc(inv.msg)}</p>
+        </div>` : '' }
+
+        <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:0">
+          <div class="detail-row">
+            <span class="detail-icon">📅</span>
+            <span class="detail-label">Дата</span>
+            <span class="detail-value">${esc(inv.date)}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-icon">🕐</span>
+            <span class="detail-label">Час</span>
+            <span class="detail-value">${esc(inv.time)}</span>
+          </div>
+          ${ inv.place ? `
+          <div class="detail-row">
+            <span class="detail-icon">📍</span>
+            <span class="detail-label">Місце</span>
+            <span class="detail-value">${esc(inv.place)}</span>
+          </div>` : '' }
+        </div>
+
+        ${ answered ? `
+          <div class="result-screen" style="margin-top:24px">
+            ${ answer==='accepted' ? `
+              <span class="result-icon">🎊</span>
+              <div class="result-title" style="color:var(--green)">Ура! Так! 🌟</div>
+              <div class="result-sub">Ви вже погодились. Чекайте на зустріч!</div>
+            ` : answer==='reschedule' ? `
+              <span class="result-icon">📅</span>
+              <div class="result-title" style="color:var(--gold)">Пропозицію надіслано</div>
+              <div class="result-sub">Ви запропонували інший час. Чекайте відповіді.</div>
+            ` : `
+              <span class="result-icon">💔</span>
+              <div class="result-title" style="color:var(--red)">Відмовлено</div>
+              <div class="result-sub">Ви вже відмовились від цього запрошення.</div>
+            ` }
+          </div>
+        ` : `
+          <div class="answer-wrap" id="answer-btns-${inv.id}">
+            <button class="btn-yes" onclick=\"answerInvite('${inv.id}','accepted')\">
+              Так, я приду! ✓
+            </button>
+            <button class="btn-no" onclick=\"answerInvite('${inv.id}','declined')\">
+              Ні, не зможу
+            </button>
+          </div>
+        ` }
+
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── ВІДПОВІДЬ (записує в Firebase) ───────────────────────────────────────
+function answerInvite(id, status) {
+  fbWrite(id, status);
+  const btns = document.getElementById('answer-btns-'+id);
+  const rescBlock = document.getElementById('reschedule-block-'+id);
+  [btns, rescBlock].forEach(el => {
+    if(el){ el.style.transition='opacity .3s,transform .3s'; el.style.opacity='0'; el.style.transform='scale(.9)'; }
+  });
+  setTimeout(() => showResult(id, status), 300);
+}
+
+function toggleReschedule(id) {
+  const block = document.getElementById('reschedule-block-'+id);
+  if (!block) return;
+  block.style.display = block.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendReschedule(id) {
+  const date = document.getElementById('rdate-'+id)?.value || '';
+  const time = document.getElementById('rtime-'+id)?.value || '';
+  if (!date && !time) { alert('Виберіть дату або час!'); return; }
+
+  // Зберігаємо в Firebase: статус + нову дату/час
+  if (db) {
+    try {
+      await db.ref('statuses/'+id).set('reschedule');
+      await db.ref('reschedule/'+id).set({ date, time, ts: Date.now() });
+    } catch(e) { console.warn('reschedule save:', e); }
+  }
+
+  // Анімація
+  const btns = document.getElementById('answer-btns-'+id);
+  const rescBlock = document.getElementById('reschedule-block-'+id);
+  [btns, rescBlock].forEach(el => {
+    if(el){ el.style.transition='opacity .3s,transform .3s'; el.style.opacity='0'; el.style.transform='scale(.9)'; }
+  });
+  setTimeout(() => showResult(id, 'reschedule'), 300);
+}
+
+function showResult(id, status) {
+  const wrap = document.querySelector('.envelope-body');
+  if (!wrap) return;
+  ['answer-btns-'+id,'reschedule-block-'+id].forEach(eid=>{
+    const el=document.getElementById(eid); if(el)el.remove();
+  });
+
+  const results = {
+    accepted: `
+      <span class="result-icon">🎊</span>
+      <div class="result-title" style="color:var(--green)">Ура! Так! 🌟</div>
+      <div class="result-sub">Ви погодились! Відправник дізнається автоматично ✓</div>`,
+    declined: `
+      <span class="result-icon">💔</span>
+      <div class="result-title" style="color:var(--red)">Відмовлено</div>
+      <div class="result-sub">Ви відмовились. Відправник дізнається автоматично.</div>`,
+    reschedule: `
+      <span class="result-icon">📅</span>
+      <div class="result-title" style="color:var(--gold)">Пропозицію надіслано!</div>
+      <div class="result-sub">Відправник отримає ваш варіант часу і зв'яжеться з вами.</div>`,
+  };
+
+  if (status === 'accepted') boom();
+  wrap.insertAdjacentHTML('beforeend', `
+    <div class="result-screen" style="margin-top:24px;animation:pop .5s cubic-bezier(.34,1.56,.64,1) both">
+      ${results[status]||results.declined}
+    </div>`);
+}
+
+// ─── MODAL ─────────────────────────────────────────────────────────────────
+function renderModal(inv) {
+  const t = TM[inv.type]||TM.other;
+  const link = inviteLink(inv);
+  return `
+  <div class="overlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.7rem">${t.e}</span>
+          <div>
+            <div style="font-weight:600;font-size:1.05rem">${esc(inv.to)}</div>
+            <div style="color:var(--muted);font-size:.82rem">${t.l}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${badge(inv.status)}
+          <button onclick="closeModal()" style="background:none;border:none;font-size:1.3rem;color:var(--muted);line-height:1">×</button>
+        </div>
+      </div>
+
+      ${divLine()}
+
+      <div style="margin-bottom:14px">
+        ${inv.msg ? `<div style="font-style:italic;padding:10px 13px;background:var(--warm);border-radius:8px;margin-bottom:14px;font-size:.97rem;line-height:1.6;border-left:3px solid var(--gold)">"${esc(inv.msg)}"</div>` : ''}
+        <div class="detail-row"><span class="detail-icon">📅</span><span class="detail-label">Дата</span><span class="detail-value">${esc(inv.date)}</span></div>
+        <div class="detail-row"><span class="detail-icon">🕐</span><span class="detail-label">Час</span><span class="detail-value">${esc(inv.time)}</span></div>
+        ${inv.place?`<div class="detail-row"><span class="detail-icon">📍</span><span class="detail-label">Місце</span><span class="detail-value">${esc(inv.place)}</span></div>`:''}
+        ${inv.status==='reschedule'?`<div id="modal-reschedule-${inv.id}" style="margin-top:8px;padding:10px 13px;background:rgba(201,146,42,.08);border-radius:8px;border-left:3px solid var(--gold)">
+          <p style="font-size:.75rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;font-weight:500">Пропозиція отримувача</p>
+          <p style="font-size:.95rem;color:var(--ink)" id="reschedule-info-${inv.id}">⏳ Завантаження...</p>
+        </div>`:''}
+      </div>
+
+      <div class="link-box">
+        <p style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:8px">Посилання для отримувача</p>
+        <div class="link-text">${esc(link)}</div>
+        <div style="display:flex;gap:8px">
+          <button id="mcopy" onclick="copyText('${link.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}', this)"
+            style="flex:1;background:var(--ink);color:var(--paper);border:none;border-radius:9px;padding:9px;font-size:.85rem">
+            🔗 Скопіювати
+          </button>
+          <button onclick="previewInvite('${inv.id}')"
+            style="flex:1;background:none;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:.85rem;color:var(--muted)">
+            👁 Переглянути
+          </button>
+        </div>
+        <p style="font-size:.74rem;color:var(--green);margin-top:10px;line-height:1.5">
+          ✓ Після відповіді статус оновиться у вас автоматично — нічого надсилати не потрібно.
+        </p>
+      </div>
+
+      <button onclick="deleteInv('${inv.id}')"
+        style="display:block;margin:14px auto 0;background:none;border:none;color:var(--red);font-size:.85rem;text-decoration:underline;cursor:pointer">
+        Видалити
+      </button>
+    </div>
+  </div>`;
+}
+
+function closeModal(){ S.modal=null; render(); }
+function previewInvite(id){ go('invite', id); }
+
+function deleteInv(id){
+  if(!confirm('Видалити запрошення?')) return;
+  saveAll(loadAll().filter(i=>i.id!==id));
+  S.modal=null; render();
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+listenFirebase();
+requestPushPermission();
+render();
+</script>
+</body>
+</html>
