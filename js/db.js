@@ -257,7 +257,7 @@
     
     // Fetch avatars for friends
     for (const f of list) {
-      const pf = await getProfile(f.uid);
+      const pf = await getUserByUid(f.uid);
       if (pf && pf.avatarBase64) f.avatarBase64 = pf.avatarBase64;
       if (pf && pf.name) f.name = pf.name; // always get latest name too
     }
