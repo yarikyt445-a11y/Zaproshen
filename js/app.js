@@ -15,6 +15,40 @@
     const user = ZAP.auth.getUser();
     const profile = ZAP.auth.getProfile();
 
+    // Dynamic page title
+    const pageTitles = {
+      'home': 'Мої запрошення',
+      'create': 'Створити запрошення',
+      'profile': 'Профіль',
+      'friends': 'Друзі',
+      'notifications': 'Сповіщення',
+      'dashboard': 'Дашборд',
+      'user-profile': 'Профіль користувача',
+      'invite': 'Перегляд запрошення',
+      'group-invite': 'Групове запрошення',
+      'login': 'Вхід',
+      'register': 'Реєстрація',
+    };
+    const titleSuffix = pageTitles[route.page] || '';
+    document.title = titleSuffix ? `Запрошення | ${titleSuffix}` : 'Запрошення';
+
+    // Set real-time user action
+    if (user && profile && ZAP.dbRef) {
+      const pageActions = {
+        'home': 'Переглядає свої запрошення',
+        'create': 'Створює нове запрошення',
+        'profile': 'Редагує налаштування профілю',
+        'friends': 'Переглядає список друзів',
+        'notifications': 'Переглядає сповіщення',
+        'dashboard': 'Керує адмін-дашбордом',
+        'user-profile': 'Переглядає профіль користувача',
+        'invite': 'Переглядає запрошення',
+        'group-invite': 'Переглядає групове запрошення',
+      };
+      const act = pageActions[route.page] || 'Активний на сайті';
+      ZAP.dbRef.ref('users/' + user.uid + '/currentAction').set(act).catch(() => { });
+    }
+
     // ── Invite pages — accessible without auth ──
     if (route.page === 'invite') {
       app.innerHTML = ZAP.utils.spinner();
@@ -342,6 +376,15 @@
       await updateUnreadCount();
       // Periodic unread count update
       setInterval(updateUnreadCount, 30000);
+      
+      // Presence heartbeat: update lastSeen every 45s
+      setInterval(() => {
+        const u = ZAP.auth.getUser();
+        if (u && ZAP.dbRef) {
+          ZAP.dbRef.ref('users/' + u.uid + '/lastSeen').set(Date.now()).catch(() => {});
+        }
+      }, 45000);
+
       // Start real-time notification listener with popup
       ZAP.notifications.listenNotifications(user.uid, (notif) => {
         showNotifPopup(notif);

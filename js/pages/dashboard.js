@@ -98,6 +98,9 @@
   // Overview
   // ═══════════════════════════════════════════════════════
   function renderOverview() {
+    const onlineUsers = users.filter(u => u.lastSeen && (Date.now() - u.lastSeen < 2 * 60 * 1000));
+    const onlineCount = onlineUsers.length;
+
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <h1 class="page-title" style="margin-bottom:0">Дашборд</h1>
@@ -107,9 +110,10 @@
     <!-- Stats cards -->
     <div class="stats-grid">
       ${statCard('👤', 'users', 'Користувачі', stats?.totalUsers || 0)}
+      ${statCard('🟢', 'online', 'Онлайн зараз', onlineCount)}
       ${statCard('📨', 'invites', 'Запрошення', stats?.totalInvites || 0)}
       ${statCard('✅', 'accepted', 'Прийняті', stats?.acceptedInvites || 0)}
-      ${statCard('🟢', 'active', 'Активні (7д)', stats?.activeUsers || 0)}
+      ${statCard('📈', 'active', 'Активні (7д)', stats?.activeUsers || 0)}
     </div>
 
     <!-- Charts -->
@@ -126,6 +130,40 @@
         </div>
         <canvas id="chart-roles" class="chart-canvas"></canvas>
       </div>
+    </div>
+
+    <!-- Online users and their actions -->
+    <div class="table-card" style="margin-bottom: 28px;">
+      <div class="table-header">
+        <h3>У мережі зараз (${onlineCount})</h3>
+      </div>
+      ${onlineCount === 0 ? `
+        <div style="text-align:center;padding:24px 0;color:var(--muted);font-style:italic;font-size:0.95rem">
+          🟢 Наразі немає користувачів у мережі
+        </div>
+      ` : `
+        <table class="data-table">
+          <thead><tr>
+            <th>Користувач</th><th>Логін</th><th>Роль</th><th>Поточна дія</th>
+          </tr></thead>
+          <tbody>
+            ${onlineUsers.map(u => `
+              <tr>
+                <td style="display:flex;align-items:center;gap:8px">
+                  ${ZAP.utils.avatarHTML(u, 'sm')}
+                  <span style="font-weight:500">${ZAP.utils.esc(u.name)}</span>
+                </td>
+                <td style="color:var(--muted)">@${ZAP.utils.esc(u.login)}</td>
+                <td>${ZAP.utils.roleBadge(u.role)}</td>
+                <td style="font-weight:500;color:var(--gold)">
+                  <span class="fb-dot ok" style="margin-right:6px"></span>
+                  ${ZAP.utils.esc(u.currentAction || 'Переглядає сайт')}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `}
     </div>
 
     <!-- Recent users -->
@@ -278,6 +316,30 @@
   }
 
   function renderReportCard(r, isResolved) {
+    let invitePreview = '';
+    if (r.targetContent) {
+      const tc = r.targetContent;
+      const dateText = tc.date || 'Не вказано';
+      const timeText = tc.time ? `, ${tc.time}` : '';
+      const placeText = tc.place ? ` · 📍 ${ZAP.utils.esc(tc.place)}` : '';
+      const creator = tc.creatorName ? ` від <strong>${ZAP.utils.esc(tc.creatorName)}</strong>` : '';
+      const toText = tc.to ? ` для <strong>${ZAP.utils.esc(tc.to)}</strong>` : ' (Групове)';
+
+      invitePreview = `
+        <div class="complaint-invite-preview">
+          <div class="cip-header">
+            <span>📋 Вміст запрошення${toText}${creator}</span>
+          </div>
+          <div class="cip-content">
+            ${tc.msg ? `<p class="cip-msg">« ${ZAP.utils.esc(tc.msg)} »</p>` : '<p class="cip-msg" style="font-style:italic;color:var(--muted)">Без тексту повідомлення</p>'}
+            <div class="cip-details" style="font-size:.78rem;color:var(--muted);margin-top:5px">
+              📅 ${ZAP.utils.esc(dateText)}${timeText}${placeText}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     return `
     <div class="complaint-card ${isResolved ? 'resolved' : ''}">
       <div class="complaint-icon">⚠️</div>
@@ -289,6 +351,7 @@
           ${ZAP.utils.timeAgo(r.createdAt)}
           ${r.comment ? `<br>💬 ${ZAP.utils.esc(r.comment)}` : ''}
         </div>
+        ${invitePreview}
         ${!isResolved ? `
           <div class="complaint-actions">
             <button class="btn btn-sm btn-red"

@@ -107,16 +107,20 @@
       <button class="btn-ghost" onclick="ZAP.pages.profile.doLogout()" style="color:var(--red)">
         Вийти з акаунту
       </button>
-    </div>
-
-    ${editing ? renderEditModal() : ''}`;
+    </div>`;
   }
 
-  function renderEditModal() {
+  function startEdit(field) {
+    editing = field;
+    saving = false;
+
+    // Remove existing if any
+    document.getElementById('edit-profile-modal')?.remove();
+
     const profile = ZAP.auth.getProfile();
     let title, body;
 
-    if (editing === 'name') {
+    if (field === 'name') {
       title = 'Змінити ім\'я';
       body = `
         <div class="form-group">
@@ -124,10 +128,10 @@
           <input id="edit-name" value="${ZAP.utils.esc(profile.name)}" placeholder="Ваше ім'я"/>
         </div>
         <div class="form-error" id="edit-error"></div>
-        <button class="btn btn-dark btn-full" onclick="ZAP.pages.profile.saveName()" ${saving ? 'disabled' : ''}>
-          ${saving ? '⏳...' : 'Зберегти'}
+        <button class="btn btn-dark btn-full" id="btn-save-profile" onclick="ZAP.pages.profile.saveName()">
+          Зберегти
         </button>`;
-    } else if (editing === 'login') {
+    } else if (field === 'login') {
       title = 'Змінити логін';
       body = `
         <div class="form-group">
@@ -138,10 +142,10 @@
           ⚠ Після зміни логіну потрібно буде входити з новим логіном
         </p>
         <div class="form-error" id="edit-error"></div>
-        <button class="btn btn-dark btn-full" onclick="ZAP.pages.profile.saveLogin()" ${saving ? 'disabled' : ''}>
-          ${saving ? '⏳...' : 'Зберегти'}
+        <button class="btn btn-dark btn-full" id="btn-save-profile" onclick="ZAP.pages.profile.saveLogin()">
+          Зберегти
         </button>`;
-    } else if (editing === 'password') {
+    } else if (field === 'password') {
       title = 'Змінити пароль';
       body = `
         <div class="form-group">
@@ -157,13 +161,16 @@
           <input id="edit-new-pass2" type="password" placeholder="Повторіть новий пароль"/>
         </div>
         <div class="form-error" id="edit-error"></div>
-        <button class="btn btn-dark btn-full" onclick="ZAP.pages.profile.savePassword()" ${saving ? 'disabled' : ''}>
-          ${saving ? '⏳...' : 'Зберегти'}
+        <button class="btn btn-dark btn-full" id="btn-save-profile" onclick="ZAP.pages.profile.savePassword()">
+          Зберегти
         </button>`;
     }
 
-    return `
-    <div class="overlay" onclick="ZAP.pages.profile.cancelEdit()">
+    const modal = document.createElement('div');
+    modal.id = 'edit-profile-modal';
+    modal.className = 'overlay';
+    modal.onclick = e => { if (e.target === modal) cancelEdit(); };
+    modal.innerHTML = `
       <div class="modal" onclick="event.stopPropagation()">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
           <h3 class="modal-title" style="margin-bottom:0">${title}</h3>
@@ -171,12 +178,24 @@
             style="background:none;border:none;font-size:1.3rem;color:var(--muted)">×</button>
         </div>
         ${body}
-      </div>
-    </div>`;
+      </div>`;
+    document.body.appendChild(modal);
   }
 
-  function startEdit(field) { editing = field; saving = false; ZAP.render(); }
-  function cancelEdit() { editing = null; saving = false; ZAP.render(); }
+  function cancelEdit() {
+    editing = null;
+    saving = false;
+    document.getElementById('edit-profile-modal')?.remove();
+  }
+
+  function setSavingState(isSaving) {
+    saving = isSaving;
+    const btn = document.getElementById('btn-save-profile');
+    if (btn) {
+      btn.disabled = isSaving;
+      btn.textContent = isSaving ? '⏳...' : 'Зберегти';
+    }
+  }
 
   function showEditError(msg) {
     const el = document.getElementById('edit-error');
@@ -187,7 +206,7 @@
     const name = document.getElementById('edit-name')?.value.trim();
     if (!name || name.length < 2) { showEditError('Ім\'я має бути не менше 2 символів'); return; }
 
-    saving = true; ZAP.render();
+    setSavingState(true);
     try {
       await ZAP.auth.updateProfile(ZAP.auth.getUser().uid, { name });
       // Update in friends lists
@@ -195,11 +214,11 @@
       for (const f of friends) {
         await ZAP.dbRef.ref('friends/' + f.uid + '/' + ZAP.auth.getUser().uid + '/name').set(name);
       }
-      editing = null; saving = false;
+      cancelEdit();
       ZAP.utils.toast('Ім\'я змінено ✓', 'success');
       ZAP.render();
     } catch (e) {
-      saving = false; ZAP.render();
+      setSavingState(false);
       setTimeout(() => showEditError(e.message || 'Помилка'), 50);
     }
   }
@@ -208,14 +227,14 @@
     const newLogin = document.getElementById('edit-login')?.value.trim();
     if (!newLogin) { showEditError('Введіть логін'); return; }
 
-    saving = true; ZAP.render();
+    setSavingState(true);
     try {
       await ZAP.auth.changeLogin(newLogin);
-      editing = null; saving = false;
+      cancelEdit();
       ZAP.utils.toast('Логін змінено ✓', 'success');
       ZAP.render();
     } catch (e) {
-      saving = false; ZAP.render();
+      setSavingState(false);
       setTimeout(() => showEditError(e.message || 'Помилка'), 50);
     }
   }
@@ -228,14 +247,14 @@
     if (!oldPass || !newPass) { showEditError('Заповніть всі поля'); return; }
     if (newPass !== newPass2) { showEditError('Паролі не співпадають'); return; }
 
-    saving = true; ZAP.render();
+    setSavingState(true);
     try {
       await ZAP.auth.changePassword(oldPass, newPass);
-      editing = null; saving = false;
+      cancelEdit();
       ZAP.utils.toast('Пароль змінено ✓', 'success');
       ZAP.render();
     } catch (e) {
-      saving = false; ZAP.render();
+      setSavingState(false);
       let msg = e.message || 'Помилка';
       if (e.code === 'auth/wrong-password') msg = 'Невірний поточний пароль';
       setTimeout(() => showEditError(msg), 50);

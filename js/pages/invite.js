@@ -520,6 +520,23 @@
     const comment = document.getElementById('report-comment')?.value?.trim() || '';
     const user = ZAP.auth.getUser();
 
+    const targetContent = isGroup ? {
+      title: groupData?.title || '',
+      msg: groupData?.msg || '',
+      date: groupData?.date || '',
+      time: groupData?.time || '',
+      place: groupData?.place || '',
+      creatorName: groupData?.creatorName || ''
+    } : {
+      to: invData?.to || '',
+      msg: invData?.msg || '',
+      date: invData?.date || '',
+      time: invData?.time || '',
+      place: invData?.place || '',
+      type: invData?.type || '',
+      creatorName: invData?.from || ''
+    };
+
     await ZAP.db.createReport({
       targetType: isGroup ? 'group-invite' : 'invite',
       targetId: invId,
@@ -527,6 +544,7 @@
       comment,
       reporterUid: user?.uid || null,
       reporterName: ZAP.auth.getProfile()?.name || 'Анонім',
+      targetContent,
     });
 
     document.querySelector('.overlay')?.remove();
