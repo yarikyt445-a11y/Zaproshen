@@ -34,7 +34,7 @@
     const snap = await db().ref('users').orderByChild('createdAt').limitToLast(limit).get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => list.push(c.val()));
+    snap.forEach(c => { list.push(c.val()); });
     return list.reverse();
   }
 
@@ -85,7 +85,7 @@
     const snap = await db().ref('user-invites/' + uid).get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => list.push(c.val()));
+    snap.forEach(c => { list.push(c.val()); });
     return list.sort((a, b) => (b.created || 0) - (a.created || 0));
   }
 
@@ -256,7 +256,7 @@
     const snap = await db().ref('friends/' + uid).get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => list.push(c.val()));
+    snap.forEach(c => { list.push(c.val()); });
 
     // Fetch fresh profile data (avatar + name) for each friend
     for (const f of list) {
@@ -274,7 +274,7 @@
     const snap = await db().ref('friend-requests/' + uid).get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => list.push(c.val()));
+    snap.forEach(c => { list.push(c.val()); });
     return list;
   }
 
@@ -298,7 +298,7 @@
     const snap = await db().ref('reports').orderByChild('createdAt').get();
     if (!snap.exists()) return [];
     const list = [];
-    snap.forEach(c => list.push(c.val()));
+    snap.forEach(c => { list.push(c.val()); });
     return list.reverse();
   }
 
@@ -328,11 +328,11 @@
     try { statusesSnap = await db().ref('statuses').get(); } catch (e) { console.warn('statuses stats:', e); }
 
     const users = [];
-    if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => users.push(c.val()));
+    if (usersSnap && usersSnap.exists()) usersSnap.forEach(c => { users.push(c.val()); });
 
     let totalInvites = 0, accepted = 0;
-    if (invitesSnap && invitesSnap.exists()) invitesSnap.forEach(() => totalInvites++);
-    if (groupSnap && groupSnap.exists()) groupSnap.forEach(() => totalInvites++);
+    if (invitesSnap && invitesSnap.exists()) invitesSnap.forEach(() => { totalInvites++; });
+    if (groupSnap && groupSnap.exists()) groupSnap.forEach(() => { totalInvites++; });
 
     // Count active users (last 7 days)
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -368,7 +368,7 @@
     if (!db()) return;
     db().ref('user-invites/' + uid).on('value', snap => {
       const list = [];
-      if (snap.exists()) snap.forEach(c => list.push(c.val()));
+      if (snap.exists()) snap.forEach(c => { list.push(c.val()); });
       callback(list.sort((a, b) => (b.created || 0) - (a.created || 0)));
     });
   }

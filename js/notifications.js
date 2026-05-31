@@ -45,7 +45,7 @@
         .orderByChild('createdAt').limitToLast(50).get();
       if (!snap.exists()) return [];
       const list = [];
-      snap.forEach(c => list.push(c.val()));
+      snap.forEach(c => { list.push(c.val()); });
       return list.reverse();
     } catch (e) { console.warn('getNotifications:', e); return []; }
   }
