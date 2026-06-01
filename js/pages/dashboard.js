@@ -33,6 +33,12 @@
       </div></div>`;
     }
 
+    // Task 5: Moderators cannot access the overview tab — redirect them to users or reports
+    const isModeOnly = ZAP.auth.isModerator() && !ZAP.auth.isAdmin();
+    if (isModeOnly && dashTab === 'overview') {
+      dashTab = 'users';
+    }
+
     return `
     <div class="app-with-sidebar">
       ${renderSidebar()}
@@ -47,16 +53,19 @@
   function renderSidebar() {
     const profile = ZAP.auth.getProfile();
     const pendingReports = reports.filter(r => r.status === 'pending').length;
+    const isModeOnly = ZAP.auth.isModerator() && !ZAP.auth.isAdmin();
 
     return `
     <aside class="sidebar" id="dash-sidebar">
       <div class="sidebar-logo">Запрошення ✦</div>
 
       <div class="sidebar-section">Меню</div>
+      ${!isModeOnly ? `
       <button class="sidebar-item ${dashTab === 'overview' ? 'active' : ''}"
         onclick="ZAP.pages.dashboard.setTab('overview')">
         <span class="sidebar-item-icon">📊</span> Огляд
       </button>
+      ` : ''}
       <button class="sidebar-item ${dashTab === 'users' ? 'active' : ''}"
         onclick="ZAP.pages.dashboard.setTab('users')">
         <span class="sidebar-item-icon">👥</span> Користувачі
@@ -142,6 +151,7 @@
           🟢 Наразі немає користувачів у мережі
         </div>
       ` : `
+        <div class="table-scroll-wrap">
         <table class="data-table">
           <thead><tr>
             <th>Користувач</th><th>Логін</th><th>Роль</th><th>Поточна дія</th>
@@ -163,6 +173,7 @@
             `).join('')}
           </tbody>
         </table>
+        </div>
       `}
     </div>
 
@@ -171,6 +182,7 @@
       <div class="table-header">
         <h3>Останні реєстрації</h3>
       </div>
+      <div class="table-scroll-wrap">
       <table class="data-table">
         <thead><tr>
           <th>Користувач</th><th>Логін</th><th>Роль</th><th>Дата</th>
@@ -189,6 +201,7 @@
           `).join('')}
         </tbody>
       </table>
+      </div>
     </div>`;
   }
 
@@ -213,6 +226,9 @@
 
     const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
     const paged = filtered.slice(userPage * PAGE_SIZE, (userPage + 1) * PAGE_SIZE);
+    const myProfile = ZAP.auth.getProfile();
+    const myRank = getRank(myProfile?.role);
+    const isModeOnly = ZAP.auth.isModerator() && !ZAP.auth.isAdmin();
 
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
@@ -228,12 +244,34 @@
           oninput="ZAP.pages.dashboard.searchUsers(this.value)"/>
       </div>
 
+      <div class="table-scroll-wrap">
       <table class="data-table">
         <thead><tr>
           <th>Користувач</th><th>Логін</th><th>Роль</th><th>Статус</th><th>Дії</th>
         </tr></thead>
         <tbody>
-          ${paged.map(u => `
+          ${paged.map(u => {
+            const targetRank = getRank(u.role);
+            const canBan = myRank > targetRank; // Task 6: can only ban lower ranks
+
+            // Task 1: Build ban status text
+            let banStatusText = '';
+            if (u.banned) {
+              if (u.bannedUntil) {
+                const msLeft = u.bannedUntil - Date.now();
+                if (msLeft > 0) {
+                  const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+                  const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
+                  banStatusText = daysLeft > 1 ? `🚫 Бан · ${daysLeft} дн.` : `🚫 Бан · ${hoursLeft} год.`;
+                } else {
+                  banStatusText = '🚫 Бан (закінчується)';
+                }
+              } else {
+                banStatusText = '🚫 Назавжди';
+              }
+            }
+
+            return `
             <tr>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;cursor:pointer"
@@ -258,19 +296,19 @@
               </td>
               <td>
                 ${u.banned
-                  ? '<span class="badge badge-declined">🚫 Бан</span>'
+                  ? `<span class="badge badge-declined" title="${u.bannedUntil ? new Date(u.bannedUntil).toLocaleString('uk-UA') : 'Перманентно'}">${banStatusText}</span>`
                   : '<span class="badge badge-accepted">✓ Активний</span>'}
               </td>
               <td>
                 ${u.banned
-                  ? `<button class="btn btn-sm btn-gold" onclick="ZAP.pages.dashboard.toggleBan('${u.uid}',false)">Розбанити</button>`
-                  : `<button class="btn btn-sm btn-outline" style="color:var(--red);border-color:var(--red)"
-                      onclick="ZAP.pages.dashboard.toggleBan('${u.uid}',true)">Бан</button>`}
+                  ? (canBan ? `<button class="btn btn-sm btn-gold" onclick="ZAP.pages.dashboard.toggleBan('${u.uid}',false)">Розбанити</button>` : '<span style="color:var(--muted);font-size:.8rem">—</span>')
+                  : (canBan ? `<button class="btn btn-sm btn-outline" style="color:var(--red);border-color:var(--red)"
+                      onclick="ZAP.pages.dashboard.toggleBan('${u.uid}',true)">Бан</button>` : '<span style="color:var(--muted);font-size:.8rem">—</span>')}
               </td>
-            </tr>
-          `).join('')}
+            </tr>`; }).join('')}
         </tbody>
       </table>
+      </div>
 
       ${totalPages > 1 ? `
         <div class="pagination">
@@ -571,8 +609,23 @@
     }
   }
 
+  // ── Role hierarchy helper ──
+  const ROLE_RANK = { user: 0, moderator: 1, 'tech-admin': 2, founder: 3 };
+  function getRank(role) { return ROLE_RANK[role] ?? 0; }
+
   async function toggleBan(uid, ban) {
-    const action = ban ? 'забанити' : 'розбанити';
+    // ── Task 6: Hierarchy check ──
+    const myProfile = ZAP.auth.getProfile();
+    const myRank = getRank(myProfile?.role);
+    const targetUser = users.find(u => u.uid === uid);
+    if (targetUser) {
+      const targetRank = getRank(targetUser.role);
+      if (ban && targetRank >= myRank) {
+        ZAP.utils.toast('Ви не можете заблокувати користувача з рівною або вищою роллю', 'error');
+        return;
+      }
+    }
+
     let until = null;
     
     if (ban) {

@@ -94,13 +94,29 @@
         profile.banned = false;
         profile.bannedUntil = null;
       } else {
-        const untilText = profile.bannedUntil ? `до ${new Date(profile.bannedUntil).toLocaleDateString()}` : 'назавжди';
+        // Determine ban status text (Task 1)
+        let banStatusTitle = 'Назавжди заблокований';
+        let banStatusBody = 'Ваш акаунт було <strong>перманентно</strong> заблоковано модератором.';
+
+        if (profile.bannedUntil) {
+          const msLeft = profile.bannedUntil - Date.now();
+          const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+          const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
+          const minsLeft = Math.ceil(msLeft / (60 * 1000));
+
+          banStatusTitle = `Заблокований на ${daysLeft > 1 ? daysLeft + ' ' + (daysLeft <= 4 ? 'дні' : 'днів') : hoursLeft > 1 ? hoursLeft + ' год' : minsLeft + ' хв'}`;
+
+          const untilDate = new Date(profile.bannedUntil);
+          const untilStr = untilDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          banStatusBody = `До розблокування залишилось: <strong>${daysLeft > 1 ? daysLeft + ' дн.' : hoursLeft > 1 ? hoursLeft + ' год.' : minsLeft + ' хв.'}</strong><br><span style="color:var(--muted);font-size:.85rem">Розблокування: ${untilStr}</span>`;
+        }
+
         app.innerHTML = `
           <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
             <div style="text-align:center;max-width:400px">
               <div style="font-size:3rem;margin-bottom:16px">🚫</div>
-              <h2 style="font-family:var(--font-heading);font-style:italic;margin-bottom:8px">Акаунт заблоковано</h2>
-              <p style="color:var(--muted);margin-bottom:20px">Ваш акаунт було заблоковано модератором <strong>${untilText}</strong>.</p>
+              <h2 style="font-family:var(--font-heading);font-style:italic;margin-bottom:8px">${banStatusTitle}</h2>
+              <p style="color:var(--muted);margin-bottom:20px;line-height:1.6">${banStatusBody}</p>
               <button class="btn btn-outline" onclick="ZAP.pages.profile.doLogout()">Вийти</button>
             </div>
           </div>`;
@@ -356,6 +372,7 @@
           <div class="notif-time">${ZAP.utils.timeAgo(n.createdAt)}</div>
           ${actionBtn ? `<div class="notif-actions">${actionBtn}</div>` : ''}
         </div>
+        <button class="notif-delete-btn" title="Видалити" onclick="ZAP.app.deleteNotification('${n.id}', this)">×</button>
       </div>`;
     }).join('')}`;
   }
@@ -367,8 +384,29 @@
     unreadCount = await ZAP.notifications.getUnreadCount(user.uid);
   }
 
+  // ── Task 4: Delete a notification inline without full re-render ──
+  async function deleteNotification(notifId, btn) {
+    const user = ZAP.auth.getUser();
+    if (!user || !notifId) return;
+    // Animate out
+    const item = btn.closest('.notif-item');
+    if (item) {
+      item.style.transition = 'opacity 0.2s, transform 0.2s';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(20px)';
+      setTimeout(() => item.remove(), 220);
+    }
+    await ZAP.notifications.deleteNotification(user.uid, notifId);
+    await updateUnreadCount();
+    // Re-render topbar/bottomnav badge without full page reload
+    const badge = document.querySelector('.notif-badge');
+    if (badge) badge.textContent = unreadCount > 0 ? unreadCount : '';
+    if (unreadCount === 0 && badge) badge.remove();
+  }
+
   // ── Init ──
   ZAP.render = render;
+  ZAP.app = { deleteNotification };
 
   ZAP.auth.onAuthReady(async (user) => {
     authReady = true;
@@ -391,6 +429,35 @@
       });
       // Request push permission
       ZAP.notifications.requestPushPermission();
+
+      // ── Task 3: Real-time ban status listener ──
+      // Watch banned/bannedUntil fields — if admin bans while user is online,
+      // they immediately lose access without needing a page reload.
+      if (ZAP.dbRef) {
+        ZAP.dbRef.ref('users/' + user.uid + '/banned').on('value', snap => {
+          const profile = ZAP.auth.getProfile();
+          if (!profile) return;
+          const newBanned = snap.val();
+          if (newBanned === true && !profile.banned) {
+            // User just got banned — re-fetch full profile to get bannedUntil, then re-render
+            ZAP.dbRef.ref('users/' + user.uid).once('value', fullSnap => {
+              if (fullSnap.exists()) {
+                const updated = fullSnap.val();
+                profile.banned = updated.banned;
+                profile.bannedUntil = updated.bannedUntil || null;
+              } else {
+                profile.banned = true;
+              }
+              ZAP.render();
+            });
+          } else if (newBanned === false && profile.banned) {
+            // User got unbanned — restore access
+            profile.banned = false;
+            profile.bannedUntil = null;
+            ZAP.render();
+          }
+        });
+      }
     }
     render();
   });

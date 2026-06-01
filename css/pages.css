@@ -153,13 +153,25 @@
   border: 1px solid var(--border); border-radius: var(--radius-md);
   margin-bottom: 8px; transition: background .2s;
   animation: fadeUp .3s ease both;
+  position: relative;
 }
 .notif-item.unread { background: rgba(201,146,42,.04); border-color: rgba(201,146,42,.2); }
 .notif-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
-.notif-body { flex: 1; }
+.notif-body { flex: 1; min-width: 0; }
 .notif-text { font-size: .9rem; line-height: 1.5; }
 .notif-time { font-size: .75rem; color: var(--muted); margin-top: 4px; }
 .notif-actions { display: flex; gap: 8px; margin-top: 8px; }
+/* Task 4: Delete button */
+.notif-delete-btn {
+  flex-shrink: 0; width: 28px; height: 28px;
+  border: none; background: none; cursor: pointer;
+  border-radius: 50%; color: var(--muted);
+  font-size: 1.1rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+  margin-top: -2px; align-self: flex-start;
+}
+.notif-delete-btn:hover { background: var(--red-bg); color: var(--red); }
 
 /* ── Report/complaint modal ── */
 .report-reasons { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
