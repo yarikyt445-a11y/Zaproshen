@@ -58,6 +58,7 @@
 /* ── Invite page background ── */
 .invite-bg {
   min-height: 100vh;
+  height: 100vh;
   display: flex; flex-direction: column;
   padding: 24px 16px;
   background:
@@ -68,11 +69,14 @@
 .invite-envelope {
   margin: auto;
   max-width: 480px; width: 100%;
+  max-height: 100%;
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
+  display: flex;
+  flex-direction: column;
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
@@ -97,7 +101,11 @@
   font-family: var(--font-heading); font-style: italic;
   font-size: 2rem; color: #fff; font-weight: 400;
 }
-.envelope-body { padding: 28px 32px 32px; }
+.envelope-body { 
+  padding: 28px 32px 80px; 
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
 .answer-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
 
 /* ── Message block ── */
@@ -309,7 +317,7 @@
   .invite-envelope { border-radius: var(--radius-lg); }
   .envelope-top { padding: 24px 20px 22px; }
   .envelope-to { font-size: 1.6rem; }
-  .envelope-body { padding: 20px 16px 24px; }
+  .envelope-body { padding: 20px 16px 80px; }
 
   /* Modal mobile */
   .overlay { padding: 12px; align-items: flex-end; }

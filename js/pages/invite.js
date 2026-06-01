@@ -154,6 +154,14 @@
               </button>
             </div>
           ` : ''}
+          
+          ${ZAP.auth.getUser() ? `
+            <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card);z-index:1">
+              <button class="btn btn-dark btn-full" onclick="ZAP.router.go('home')">
+                Перейти до головного меню
+              </button>
+            </div>
+          ` : ''}
         </div>
       </div>
     </div>`;
@@ -291,6 +299,14 @@
           ` : ''}
 
           ${answered ? renderResult(answerStatus) : renderGroupJoin()}
+          
+          ${ZAP.auth.getUser() ? `
+            <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card);z-index:1">
+              <button class="btn btn-dark btn-full" onclick="ZAP.router.go('home')">
+                Перейти до головного меню
+              </button>
+            </div>
+          ` : ''}
         </div>
       </div>
     </div>`;
