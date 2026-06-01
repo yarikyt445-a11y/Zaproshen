@@ -144,9 +144,16 @@
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .table-header { flex-direction: column; align-items: stretch; }
   .table-search { max-width: none; }
-  .data-table { font-size: .82rem; }
-  .data-table th, .data-table td { padding: 8px 6px; }
-  .data-table th:nth-child(n+4), .data-table td:nth-child(n+4) { display: none; }
+
+  /* Горизонтальний скрол — усі колонки видимі */
+  .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 16px 12px; }
+  .data-table { font-size: .78rem; min-width: 560px; }
+  .data-table th, .data-table td { padding: 8px 8px; }
+
+  /* Компактніші елементи */
+  .data-table .btn-sm { padding: 5px 10px; font-size: .76rem; }
+  .role-select { padding: 4px 6px; font-size: .75rem; max-width: 100px; }
+  .data-table .badge { font-size: .65rem; padding: 2px 7px; white-space: nowrap; }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
