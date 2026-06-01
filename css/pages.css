@@ -134,11 +134,20 @@
   margin-bottom: 10px; transition: box-shadow .2s, transform .15s;
   animation: fadeUp .4s ease both;
 }
-.friend-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.friend-card:hover:not(.processed) { box-shadow: var(--shadow); transform: translateY(-1px); }
+.friend-card.processed {
+  opacity: .65;
+  border-left: 4px solid var(--green);
+  cursor: default;
+}
 .friend-info { flex: 1; min-width: 0; }
 .friend-name { font-weight: 600; font-size: .95rem; }
 .friend-id { font-size: .75rem; color: var(--muted); font-family: monospace; }
 .friend-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.friend-actions.processed-status {
+  display: flex; align-items: center; justify-content: center;
+  margin-left: auto;
+}
 
 .friend-search {
   display: flex; gap: 10px; margin-bottom: 24px;
@@ -156,6 +165,10 @@
   position: relative;
 }
 .notif-item.unread { background: rgba(201,146,42,.04); border-color: rgba(201,146,42,.2); }
+.notif-item.processed {
+  opacity: .65;
+  border-left: 4px solid var(--green);
+}
 .notif-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
 .notif-body { flex: 1; min-width: 0; }
 .notif-text { font-size: .9rem; line-height: 1.5; }
@@ -172,6 +185,14 @@
   margin-top: -2px; align-self: flex-start;
 }
 .notif-delete-btn:hover { background: var(--red-bg); color: var(--red); }
+
+/* Status text for processed requests */
+.status-text {
+  font-size: .88rem;
+  color: var(--green);
+  font-weight: 500;
+  font-style: italic;
+}
 
 /* ── Report/complaint modal ── */
 .report-reasons { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
@@ -213,6 +234,16 @@
   .friend-info { min-width: 0; }
   .friend-name { font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .friend-actions { flex-shrink: 0; gap: 6px; }
+  .friend-actions.processed-status { margin-left: 0; }
+  .status-text { font-size: .8rem; }
   .user-profile-actions { flex-direction: column; }
   .friend-search { flex-direction: column; }
+  
+  /* Notifications */
+  .notif-item { padding: 12px 14px; gap: 10px; }
+  .notif-icon { font-size: 1.2rem; }
+  .notif-text { font-size: .85rem; }
+  .notif-actions { gap: 6px; }
+  .notif-actions .btn-sm { padding: 6px 10px; font-size: .8rem; }
+  .notif-delete-btn { width: 24px; height: 24px; font-size: .95rem; }
 }

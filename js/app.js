@@ -368,18 +368,31 @@
       'invite-reschedule': '📅',
     };
 
+    // Track processed friend requests to prevent duplicate actions
+    const processedReqs = new Set();
+    // Check which friend requests are already processed (user is already a friend)
+    const friends = await ZAP.db.getFriends(user.uid);
+    const friendUids = new Set(friends.map(f => f.uid));
+
     return `
     <h1 class="page-title">Сповіщення</h1>
     <p class="page-subtitle">Ваші останні сповіщення</p>
     ${notifs.map((n, i) => {
       const icon = iconMap[n.type] || '✦';
       let actionBtn = '';
+      const isProcessed = (n.type === 'friend-request' && n.fromUid && friendUids.has(n.fromUid)) || processedReqs.has(n.fromUid);
 
       if (n.type === 'friend-request' && n.fromUid) {
-        actionBtn = `
-          <button class="btn btn-gold btn-sm" onclick="ZAP.pages.friends.acceptReq('${n.fromUid}');this.closest('.notif-item').remove()">Прийняти</button>
-          <button class="btn btn-outline btn-sm" onclick="ZAP.pages.friends.declineReq('${n.fromUid}');this.closest('.notif-item').remove()">Відхилити</button>
-        `;
+        if (isProcessed) {
+          actionBtn = `<span class="status-text">Запит прийнято</span>`;
+        } else {
+          actionBtn = `
+            <button class="btn btn-gold btn-sm" 
+              onclick="ZAP.pages.friends.acceptReq('${n.fromUid}');processedReqs.add('${n.fromUid}');this.closest('.notif-item').remove()">Прийняти</button>
+            <button class="btn btn-outline btn-sm" 
+              onclick="ZAP.pages.friends.declineReq('${n.fromUid}');processedReqs.add('${n.fromUid}');this.closest('.notif-item').remove()">Відхилити</button>
+          `;
+        }
       } else if ((n.type === 'invite' || n.type === 'group-invite') && n.inviteId) {
         const routePage = n.type === 'group-invite' ? 'group-invite' : 'invite';
         actionBtn = `<button class="btn btn-gold btn-sm" onclick="ZAP.router.go('${routePage}',{id:'${n.inviteId}'})">Переглянути</button>`;
@@ -388,7 +401,7 @@
       }
 
       return `
-      <div class="notif-item ${n.read ? '' : 'unread'}" style="animation-delay:${i * 40}ms">
+      <div class="notif-item ${n.read ? '' : 'unread'} ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 40}ms">
         <div class="notif-icon">${icon}</div>
         <div class="notif-body">
           <div class="notif-text"><strong>${ZAP.utils.esc(n.title || '')}</strong></div>

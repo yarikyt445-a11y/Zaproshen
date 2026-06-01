@@ -10,12 +10,21 @@
   let tab = 'friends'; // 'friends' | 'requests' | 'invites'
   let friendInvites = []; // invites from friends
   let loaded = false;
+  let processedRequests = new Set(); // Track processed friend requests by fromUid
 
   async function load() {
     const user = ZAP.auth.getUser();
     if (!user) return;
     friends = await ZAP.db.getFriends(user.uid);
     requests = await ZAP.db.getFriendRequests(user.uid);
+
+    // Mark requests as processed if user is already a friend
+    const friendUids = new Set(friends.map(f => f.uid));
+    requests.forEach(req => {
+      if (friendUids.has(req.fromUid)) {
+        processedRequests.add(req.fromUid);
+      }
+    });
 
     // Load friend invites from notifications
     const notifs = await ZAP.notifications.getNotifications(user.uid);
@@ -108,21 +117,29 @@
       </div>`;
     }
 
-    return requests.map((req, i) => `
-      <div class="friend-card" style="animation-delay:${i * 40}ms">
+    return requests.map((req, i) => {
+      const isProcessed = processedRequests.has(req.fromUid);
+      return `
+      <div class="friend-card ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 40}ms">
         <div class="avatar">${(req.fromName || '?').charAt(0).toUpperCase()}</div>
         <div class="friend-info">
           <div class="friend-name">${ZAP.utils.esc(req.fromName)}</div>
           <div style="font-size:.78rem;color:var(--muted)">${ZAP.utils.timeAgo(req.sentAt)}</div>
         </div>
-        <div class="friend-actions">
-          <button class="btn btn-gold btn-sm"
-            onclick="ZAP.pages.friends.acceptReq('${req.fromUid}')">✓ Прийняти</button>
-          <button class="btn btn-outline btn-sm"
-            onclick="ZAP.pages.friends.declineReq('${req.fromUid}')">✕</button>
-        </div>
+        ${isProcessed ? `
+          <div class="friend-actions processed-status">
+            <span class="status-text">Запит прийнято</span>
+          </div>
+        ` : `
+          <div class="friend-actions">
+            <button class="btn btn-gold btn-sm"
+              onclick="ZAP.pages.friends.acceptReq('${req.fromUid}')">✓ Прийняти</button>
+            <button class="btn btn-outline btn-sm"
+              onclick="ZAP.pages.friends.declineReq('${req.fromUid}')">✕</button>
+          </div>
+        `}
       </div>
-    `).join('');
+    `}).join('');
   }
 
   function renderFriendInvites() {
@@ -224,6 +241,11 @@
   async function acceptReq(fromUid) {
     const me = ZAP.auth.getUser();
     if (!me) return;
+    
+    // Mark as processed immediately to prevent duplicate clicks
+    processedRequests.add(fromUid);
+    ZAP.render();
+    
     try {
       await ZAP.db.acceptFriendRequest(me.uid, fromUid);
       requests = requests.filter(r => r.fromUid !== fromUid);
@@ -239,6 +261,11 @@
   async function declineReq(fromUid) {
     const me = ZAP.auth.getUser();
     if (!me) return;
+    
+    // Mark as processed immediately to prevent duplicate clicks
+    processedRequests.add(fromUid);
+    ZAP.render();
+    
     await ZAP.db.declineFriendRequest(me.uid, fromUid);
     requests = requests.filter(r => r.fromUid !== fromUid);
     await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);

@@ -216,6 +216,14 @@
 
   async function acceptFriendRequest(myUid, fromUid) {
     if (!db()) return;
+    
+    // Check if already friends (idempotent operation)
+    const alreadyFriends = await db().ref('friends/' + myUid + '/' + fromUid).get();
+    if (alreadyFriends.exists()) {
+      console.log('acceptFriendRequest: Already friends, skipping');
+      return;
+    }
+    
     const myProfile = await getUserByUid(myUid);
     const theirProfile = await getUserByUid(fromUid);
 
@@ -242,7 +250,11 @@
 
   async function declineFriendRequest(myUid, fromUid) {
     if (!db()) return;
-    await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
+    // Check if request exists (idempotent operation)
+    const req = await db().ref('friend-requests/' + myUid + '/' + fromUid).get();
+    if (req.exists()) {
+      await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
+    }
   }
 
   async function removeFriend(myUid, friendUid) {
