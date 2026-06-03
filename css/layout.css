@@ -58,7 +58,6 @@
 /* ── Invite page background ── */
 .invite-bg {
   min-height: 100vh;
-  height: 100vh;
   display: flex; flex-direction: column;
   padding: 24px 16px;
   background:
@@ -76,7 +75,6 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
-  max-height: 100%;
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
@@ -101,10 +99,8 @@
   font-family: var(--font-heading); font-style: italic;
   font-size: 2rem; color: #fff; font-weight: 400;
 }
-.envelope-body { 
-  padding: 28px 32px 70px; 
-  overflow-y: auto;
-  flex: 1;
+.envelope-body {
+  padding: 28px 32px;
 }
 .answer-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
 
@@ -317,7 +313,7 @@
   .invite-envelope { border-radius: var(--radius-lg); }
   .envelope-top { padding: 24px 20px 22px; }
   .envelope-to { font-size: 1.6rem; }
-  .envelope-body { padding: 20px 16px 70px; overflow-y: auto; flex: 1; }
+  .envelope-body { padding: 20px 16px; }
 
   /* Modal mobile */
   .overlay { padding: 12px; align-items: flex-end; }
