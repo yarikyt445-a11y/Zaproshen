@@ -318,7 +318,7 @@
   /* Modal mobile */
   .overlay { padding: 12px; align-items: flex-end; }
   .modal {
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: var(--radius-lg);
     max-height: 85vh;
     padding: 24px 20px;
     animation: slideUpModal .3s var(--ease);

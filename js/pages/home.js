@@ -139,7 +139,7 @@
               style="flex:1;background:var(--ink);color:var(--paper);border:none;border-radius:9px;padding:9px;font-size:.85rem">
               🔗 Скопіювати
             </button>
-            <button onclick="ZAP.router.go('${inv.isGroup ? 'group-invite' : 'invite'}', {id:'${inv.id}'})"
+            <button onclick="ZAP.pages.home.closeModal();ZAP.router.go('${inv.isGroup ? 'group-invite' : 'invite'}', {id:'${inv.id}'})"
               style="flex:1;background:none;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:.85rem;color:var(--muted)">
               👁 Переглянути
             </button>
@@ -190,6 +190,7 @@
   }
 
   async function deleteInv(id) {
+    closeModal();
     if (!confirm('Видалити запрошення?')) return;
     await ZAP.db.deleteInvite(id, ZAP.auth.getUser()?.uid);
     invites = invites.filter(i => i.id !== id);
