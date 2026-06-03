@@ -191,7 +191,7 @@
 
   async function deleteInv(id) {
     closeModal();
-    if (!confirm('Видалити запрошення?')) return;
+    if (!await ZAP.utils.confirm('Видалити запрошення?')) return;
     await ZAP.db.deleteInvite(id, ZAP.auth.getUser()?.uid);
     invites = invites.filter(i => i.id !== id);
     modalInv = null;

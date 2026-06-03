@@ -165,10 +165,73 @@
     return location.origin + '/i/' + invId;
   }
 
+  // ── Custom confirm ──
+  function confirm(message) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(false); } };
+      overlay.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()" style="text-align:center;max-width:380px">
+          <p style="font-size:1rem;margin-bottom:20px;line-height:1.5">${esc(message)}</p>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-full" id="cup-yes" style="background:var(--red);color:#fff;border:none">Так</button>
+            <button class="btn btn-outline btn-full" id="cup-no">Ні</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#cup-yes').onclick = () => { overlay.remove(); resolve(true); };
+      overlay.querySelector('#cup-no').onclick = () => { overlay.remove(); resolve(false); };
+    });
+  }
+
+  // ── Custom alert ──
+  function alert(message) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(); } };
+      overlay.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()" style="text-align:center;max-width:380px">
+          <p style="font-size:1rem;margin-bottom:20px;line-height:1.5">${esc(message)}</p>
+          <button class="btn btn-dark btn-full" id="cup-ok">ОК</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#cup-ok').onclick = () => { overlay.remove(); resolve(); };
+    });
+  }
+
+  // ── Custom prompt ──
+  function prompt(message, placeholder) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(null); } };
+      overlay.innerHTML = `
+        <div class="modal" onclick="event.stopPropagation()" style="max-width:380px">
+          <p style="font-size:1rem;margin-bottom:16px;line-height:1.5">${esc(message)}</p>
+          <div class="form-group">
+            <input id="cup-input" placeholder="${esc(placeholder || '')}" autofocus/>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btn-dark btn-full" id="cup-ok">ОК</button>
+            <button class="btn btn-outline btn-full" id="cup-cancel">Скасувати</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const input = overlay.querySelector('#cup-input');
+      input.focus();
+      input.onkeydown = e => { if (e.key === 'Enter') { overlay.remove(); resolve(input.value || ''); } };
+      overlay.querySelector('#cup-ok').onclick = () => { overlay.remove(); resolve(input.value || ''); };
+      overlay.querySelector('#cup-cancel').onclick = () => { overlay.remove(); resolve(null); };
+    });
+  }
+
   // ── Expose ──
   ZAP.utils = {
     esc, genId, genUserId, copyText, badge, roleBadge, divLine,
     boom, toast, formatDate, timeAgo, avatarHTML, spinner,
     TYPES, TYPE_MAP, inviteLink,
+    confirm, alert, prompt,
   };
 })();

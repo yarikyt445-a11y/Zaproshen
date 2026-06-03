@@ -914,13 +914,13 @@
     let until = null;
     
     if (ban) {
-      const days = prompt('На скільки днів забанити? (Залиште порожнім для перманентного бану)');
+      const days = await ZAP.utils.prompt('На скільки днів забанити?', 'Залиште порожнім для перманентного бану');
       if (days === null) return; // cancelled
       if (days.trim() !== '' && !isNaN(Number(days))) {
         until = Date.now() + (Number(days) * 24 * 60 * 60 * 1000);
       }
     } else {
-      if (!confirm(`Ви впевнені, що хочете розбанити цього користувача?`)) return;
+      if (!await ZAP.utils.confirm('Ви впевнені, що хочете розбанити цього користувача?')) return;
     }
 
     try {
@@ -950,7 +950,7 @@
   }
 
   async function deleteReportedInvite(targetId, targetType, reportId) {
-    if (!confirm('Видалити це запрошення та вирішити скаргу?')) return;
+    if (!await ZAP.utils.confirm('Видалити це запрошення та вирішити скаргу?')) return;
     try {
       if (targetType === 'group-invite') {
         await ZAP.dbRef.ref('group-invites/' + targetId).remove();

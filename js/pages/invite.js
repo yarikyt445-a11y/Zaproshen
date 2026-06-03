@@ -409,7 +409,7 @@
   async function sendReschedule(invId) {
     const date = document.getElementById('rdate-' + invId)?.value || '';
     const time = document.getElementById('rtime-' + invId)?.value || '';
-    if (!date && !time) { alert('Виберіть дату або час!'); return; }
+    if (!date && !time) { ZAP.utils.alert('Виберіть дату або час!'); return; }
 
     await ZAP.db.saveReschedule(invId, { date, time });
 

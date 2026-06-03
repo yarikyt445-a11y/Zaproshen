@@ -273,7 +273,7 @@
   }
 
   async function removeFriend(friendUid, friendName) {
-    if (!confirm(`Видалити ${friendName} з друзів?`)) return;
+    if (!await ZAP.utils.confirm(`Видалити ${friendName} з друзів?`)) return;
     const me = ZAP.auth.getUser();
     if (!me) return;
     await ZAP.db.removeFriend(me.uid, friendUid);
