@@ -62,6 +62,9 @@
         await ZAP.pages.invite.loadPersonal(route.params.inviteId, route.params.b64);
       }
       app.innerHTML = ZAP.pages.invite.render();
+      requestAnimationFrame(() => {
+        document.querySelector('.invite-envelope')?.scrollIntoView({ block: 'center' });
+      });
       return;
     }
 
@@ -71,6 +74,9 @@
         await ZAP.pages.invite.loadGroup(route.params.inviteId);
       }
       app.innerHTML = ZAP.pages.invite.render();
+      requestAnimationFrame(() => {
+        document.querySelector('.invite-envelope')?.scrollIntoView({ block: 'center' });
+      });
       return;
     }
 

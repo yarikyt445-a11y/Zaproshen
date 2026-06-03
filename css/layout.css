@@ -57,7 +57,7 @@
 
 /* ── Invite page background ── */
 .invite-bg {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex; flex-direction: column;
   padding: 24px 16px;
   background:
