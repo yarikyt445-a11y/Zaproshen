@@ -98,6 +98,7 @@
   padding: 5px 10px; font-size: .8rem;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   background: var(--paper); cursor: pointer;
+  min-width: 140px;
 }
 
 /* ── Complaints section ── */
