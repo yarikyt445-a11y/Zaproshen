@@ -152,7 +152,7 @@
 
   function renderDone() {
     const link = createdInv.isGroup
-      ? location.href.split('#')[0] + '#g/' + createdInv.id
+      ? location.origin + '/g/' + createdInv.id
       : ZAP.utils.inviteLink(createdInv.id);
 
     return `

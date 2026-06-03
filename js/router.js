@@ -1,15 +1,15 @@
 /* ═══════════════════════════════════════════════════════
-   Router — Hash-based SPA router
+   Router — History-based SPA router
    ═══════════════════════════════════════════════════════ */
 
 (function () {
-  function parseHash() {
-    const h = location.hash.slice(1);
-    if (!h || h === '/') return { page: 'home', params: {} };
+  function parsePath() {
+    const p = window.location.pathname.replace(/^\/+|\/+$/g, '');
+    if (!p) return { page: 'home', params: {} };
 
-    // Invite: #i/{id}
-    if (h.startsWith('i/')) {
-      const val = h.slice(2);
+    // Invite: /i/{id}
+    if (p.startsWith('i/')) {
+      const val = p.slice(2);
       const isShortId = val.length <= 14 && !/[=+/]/.test(val);
       return {
         page: 'invite',
@@ -17,35 +17,38 @@
       };
     }
 
-    // Group invite: #g/{id}
-    if (h.startsWith('g/')) {
-      return { page: 'group-invite', params: { inviteId: h.slice(2) } };
+    // Group invite: /g/{id}
+    if (p.startsWith('g/')) {
+      return { page: 'group-invite', params: { inviteId: p.slice(2) } };
     }
 
-    // User profile: #user/{uid}
-    if (h.startsWith('user/')) {
-      return { page: 'user-profile', params: { uid: h.slice(5) } };
+    // User profile: /user/{uid}
+    if (p.startsWith('user/')) {
+      return { page: 'user-profile', params: { uid: p.slice(5) } };
     }
 
     // Simple pages
     const simple = ['create', 'login', 'register', 'profile', 'friends', 'dashboard', 'notifications'];
-    if (simple.includes(h)) return { page: h, params: {} };
+    if (simple.includes(p)) return { page: p, params: {} };
 
     return { page: 'home', params: {} };
   }
 
   function go(page, params) {
+    let path = '/';
     if (page === 'invite' && params?.id) {
-      location.hash = 'i/' + params.id;
+      path = '/i/' + params.id;
     } else if (page === 'group-invite' && params?.id) {
-      location.hash = 'g/' + params.id;
+      path = '/g/' + params.id;
     } else if (page === 'user-profile' && params?.uid) {
-      location.hash = 'user/' + params.uid;
-    } else if (page === 'home') {
-      location.hash = '';
-    } else {
-      location.hash = page;
+      path = '/user/' + params.uid;
+    } else if (page !== 'home') {
+      path = '/' + page;
     }
+
+    if (window.location.pathname === path) return;
+    history.pushState({}, '', path);
+    if (ZAP.render) ZAP.render();
   }
 
   // Pages that require authentication
@@ -61,9 +64,10 @@
     return ADMIN_REQUIRED.includes(page);
   }
 
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('popstate', () => {
     if (ZAP.render) ZAP.render();
   });
 
-  ZAP.router = { parseHash, go, isAuthRequired, isAdminRequired };
+  // Keep parseHash as alias for backward compatibility
+  ZAP.router = { parseHash: parsePath, parsePath, go, isAuthRequired, isAdminRequired };
 })();

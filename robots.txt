@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /notifications
+
+Sitemap: https://zaproshenya.vercel.app/sitemap.xml

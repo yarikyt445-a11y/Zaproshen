@@ -88,7 +88,7 @@
     const { esc, badge, TYPE_MAP, inviteLink, divLine } = ZAP.utils;
     const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
     const link = inv.isGroup
-      ? location.href.split('#')[0] + '#g/' + inv.id
+      ? location.origin + '/g/' + inv.id
       : inviteLink(inv.id);
 
     return `
@@ -221,7 +221,7 @@
         }
       });
       if (changed) {
-        const route = ZAP.router.parseHash();
+        const route = ZAP.router.parsePath();
         if (route.page === 'home') ZAP.render();
       }
     });

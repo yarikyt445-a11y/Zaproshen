@@ -162,7 +162,7 @@
 
   // ── Invite link ──
   function inviteLink(invId) {
-    return location.href.split('#')[0] + '#i/' + invId;
+    return location.origin + '/i/' + invId;
   }
 
   // ── Expose ──

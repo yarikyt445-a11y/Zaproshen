@@ -13,7 +13,7 @@
     const app = document.getElementById('app');
     if (!app) return;
 
-    const route = ZAP.router.parseHash();
+    const route = ZAP.router.parsePath();
     const user = ZAP.auth.getUser();
     const profile = ZAP.auth.getProfile();
 
