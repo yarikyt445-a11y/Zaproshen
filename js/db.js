@@ -276,6 +276,7 @@
       if (pf) {
         if (pf.avatar) f.avatar = pf.avatar;
         if (pf.name) f.name = pf.name;
+        if (pf.uniqueId) f.uniqueId = pf.uniqueId;
       }
     }
     return list;

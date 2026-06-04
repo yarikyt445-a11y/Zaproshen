@@ -107,7 +107,11 @@
         ${friends.map(f => `
           <button class="pill ${selectedFriends.includes(f.uid) ? 'on' : ''}"
             onclick="ZAP.pages.create.toggleFriend('${f.uid}','personal')">
-            ${ZAP.utils.esc(f.name)}
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+              ${ZAP.utils.avatarHTML(f, 'sm')}
+              <span>${ZAP.utils.esc(f.name)}</span>
+              ${f.uniqueId ? `<span style="font-size:.65rem;color:var(--muted);font-family:monospace">${ZAP.utils.esc(f.uniqueId)}</span>` : ''}
+            </div>
           </button>
         `).join('')}
       </div>
