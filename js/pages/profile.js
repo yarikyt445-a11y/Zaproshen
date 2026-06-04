@@ -40,7 +40,7 @@
     const profile = ZAP.auth.getProfile();
     if (!profile) return ZAP.utils.spinner();
 
-    const { esc, avatarHTML, roleBadge } = ZAP.utils;
+    const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
 
     return `
     <h1 class="page-title">Профіль</h1>
@@ -51,7 +51,7 @@
       <div class="profile-avatar-wrap">
         ${avatarHTML(profile, 'xl')}
         <label class="profile-avatar-edit" title="Змінити аватар">
-          📷
+          ${icon('camera', 18)}
           <input type="file" accept="image/*" style="display:none"
             onchange="ZAP.pages.profile.uploadAvatar(this.files[0])"/>
         </label>
@@ -127,14 +127,14 @@
         <div class="profile-field">
           <div class="profile-field-label">Типи (Персональні / Групове)</div>
           <div class="profile-field-value" style="color:var(--muted)">
-            👤 ${stats.personalCount} / 👥 ${stats.groupCount}
+            ${icon('user', 14)} ${stats.personalCount} / 👥 ${stats.groupCount}
           </div>
         </div>
         <div class="profile-field">
           <div class="profile-field-label">Статуси відповідей</div>
           <div class="profile-field-value" style="display:flex;gap:6px">
-            <span class="badge badge-accepted" style="font-size:0.75rem">✓ ${stats.acceptedCount} прийнято</span>
-            <span class="badge badge-declined" style="font-size:0.75rem">✕ ${stats.declinedCount} відхилено</span>
+            <span class="badge badge-accepted" style="font-size:0.75rem">${icon('check', 14)} ${stats.acceptedCount} прийнято</span>
+            <span class="badge badge-declined" style="font-size:0.75rem">${icon('x', 14)} ${stats.declinedCount} відхилено</span>
           </div>
         </div>
         <div class="profile-field">
@@ -151,7 +151,7 @@
         Видалення акаунту є незворотнім. Усі ваші дані будуть стерті.
       </p>
       <button class="btn btn-red btn-sm" onclick="ZAP.pages.profile.confirmDelete()">
-        🗑 Видалити акаунт
+        ${icon('trash', 14)} Видалити акаунт
       </button>
     </div>
 
@@ -164,6 +164,7 @@
   }
 
   function startEdit(field) {
+    const { icon } = ZAP.utils;
     editing = field;
     saving = false;
 
@@ -192,7 +193,7 @@
           <input id="edit-login" value="${ZAP.utils.esc(profile.login)}" placeholder="Логін (латиниця, цифри, _)"/>
         </div>
         <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">
-          ⚠ Після зміни логіну потрібно буде входити з новим логіном
+          ${icon('warning', 14)} Після зміни логіну потрібно буде входити з новим логіном
         </p>
         <div class="form-error" id="edit-error"></div>
         <button class="btn btn-dark btn-full" id="btn-save-profile" onclick="ZAP.pages.profile.saveLogin()">
@@ -246,7 +247,7 @@
     const btn = document.getElementById('btn-save-profile');
     if (btn) {
       btn.disabled = isSaving;
-      btn.textContent = isSaving ? '⏳...' : 'Зберегти';
+      btn.textContent = isSaving ? '...' : 'Зберегти';
     }
   }
 
@@ -256,6 +257,7 @@
   }
 
   async function saveName() {
+    const { icon } = ZAP.utils;
     const name = document.getElementById('edit-name')?.value.trim();
     if (!name || name.length < 2) { showEditError('Ім\'я має бути не менше 2 символів'); return; }
 
@@ -268,7 +270,7 @@
         await ZAP.dbRef.ref('friends/' + f.uid + '/' + ZAP.auth.getUser().uid + '/name').set(name);
       }
       cancelEdit();
-      ZAP.utils.toast('Ім\'я змінено ✓', 'success');
+      ZAP.utils.toast(`Ім'я змінено ${icon('check', 14)}`, 'success');
       ZAP.render();
     } catch (e) {
       setSavingState(false);
@@ -277,6 +279,7 @@
   }
 
   async function saveLogin() {
+    const { icon } = ZAP.utils;
     const newLogin = document.getElementById('edit-login')?.value.trim();
     if (!newLogin) { showEditError('Введіть логін'); return; }
 
@@ -284,7 +287,7 @@
     try {
       await ZAP.auth.changeLogin(newLogin);
       cancelEdit();
-      ZAP.utils.toast('Логін змінено ✓', 'success');
+      ZAP.utils.toast(`Логін змінено ${icon('check', 14)}`, 'success');
       ZAP.render();
     } catch (e) {
       setSavingState(false);
@@ -293,6 +296,7 @@
   }
 
   async function savePassword() {
+    const { icon } = ZAP.utils;
     const oldPass = document.getElementById('edit-old-pass')?.value;
     const newPass = document.getElementById('edit-new-pass')?.value;
     const newPass2 = document.getElementById('edit-new-pass2')?.value;
@@ -304,7 +308,7 @@
     try {
       await ZAP.auth.changePassword(oldPass, newPass);
       cancelEdit();
-      ZAP.utils.toast('Пароль змінено ✓', 'success');
+      ZAP.utils.toast(`Пароль змінено ${icon('check', 14)}`, 'success');
       ZAP.render();
     } catch (e) {
       setSavingState(false);
@@ -315,11 +319,12 @@
   }
 
   async function uploadAvatar(file) {
+    const { icon } = ZAP.utils;
     if (!file) return;
     try {
       ZAP.utils.toast('Завантаження аватару...', 'info');
       await ZAP.auth.uploadAvatar(file);
-      ZAP.utils.toast('Аватар оновлено ✓', 'success');
+      ZAP.utils.toast(`Аватар оновлено ${icon('check', 14)}`, 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast(e.message || 'Помилка завантаження', 'error');
@@ -327,12 +332,13 @@
   }
 
   function confirmDelete() {
+    const { icon } = ZAP.utils;
     const modal = document.createElement('div');
     modal.className = 'overlay';
     modal.onclick = e => { if (e.target === modal) modal.remove(); };
     modal.innerHTML = `
       <div class="modal" onclick="event.stopPropagation()">
-        <h3 class="modal-title" style="color:var(--red)">🗑 Видалити акаунт?</h3>
+        <h3 class="modal-title" style="color:var(--red)">${icon('trash', 20)} Видалити акаунт?</h3>
         <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px">
           Ця дія незворотня. Всі ваші дані, запрошення та друзі будуть видалені.
         </p>

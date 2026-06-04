@@ -21,7 +21,7 @@
   }
 
   function render() {
-    const { esc, TYPES } = ZAP.utils;
+    const { esc, TYPES, icon } = ZAP.utils;
     const today = new Date().toISOString().split('T')[0];
     const profile = ZAP.auth.getProfile();
 
@@ -34,7 +34,7 @@
     <!-- Mode switcher -->
     <div class="tabs" style="margin-bottom:28px">
       <button class="tab ${mode === 'personal' ? 'active' : ''}"
-        onclick="ZAP.pages.create.setMode('personal')">👤 Персональне</button>
+        onclick="ZAP.pages.create.setMode('personal')">${icon('user', 18)} Персональне</button>
       <button class="tab ${mode === 'group' ? 'active' : ''}"
         onclick="ZAP.pages.create.setMode('group')">👥 Групове</button>
     </div>
@@ -86,8 +86,8 @@
             role="switch" aria-checked="${requireAuth}" aria-label="Обмежити доступ лише для зареєстрованих"></button>
           <span class="toggle-label">
             ${requireAuth
-              ? '🔒 Тільки для зареєстрованих — отримувач повинен увійти в акаунт'
-              : '🌐 Для всіх — будь-хто може переглянути запрошення'}
+              ? `${icon('lock', 14)} Тільки для зареєстрованих — отримувач повинен увійти в акаунт`
+              : `${icon('globe-hemisphere-west', 14)} Для всіх — будь-хто може переглянути запрошення`}
           </span>
         </div>
       </div>
@@ -111,7 +111,7 @@
         Або надішліть напряму другу
       </p>
       ${friends.length > 3 ? `
-        <input type="text" placeholder="🔍 Пошук друга..."
+        <input type="text" placeholder="Пошук друга..."
           value="${ZAP.utils.esc(friendFilter)}"
           oninput="ZAP.pages.create.filterFriends(this.value)"
           aria-label="Пошук друга за іменем або ID"
@@ -135,6 +135,7 @@
   }
 
   function renderGroupOptions() {
+    const { icon } = ZAP.utils;
     return `
     <!-- Public / Private toggle -->
     <div style="background:var(--warm);border-radius:12px;padding:16px;border:1px solid var(--border)">
@@ -143,7 +144,7 @@
           onclick="ZAP.pages.create.togglePublic()"
           role="switch" aria-checked="${isPublic}" aria-label="Публічне або приватне запрошення"></button>
         <span class="toggle-label">
-          ${isPublic ? '🌍 Публічне — будь-хто може приєднатися за посиланням' : '🔒 Приватне — тільки для обраних друзів'}
+          ${isPublic ? '🌍 Публічне — будь-хто може приєднатися за посиланням' : `${icon('lock', 14)} Приватне — тільки для обраних друзів`}
         </span>
       </div>
 
@@ -160,7 +161,7 @@
             ${friends.map(f => `
               <div class="check-item ${selectedFriends.includes(f.uid) ? 'checked' : ''}"
                 onclick="ZAP.pages.create.toggleFriend('${f.uid}','group')">
-                <div class="check-box">${selectedFriends.includes(f.uid) ? '✓' : ''}</div>
+                <div class="check-box">${selectedFriends.includes(f.uid) ? icon('check', 14) : ''}</div>
                 ${ZAP.utils.avatarHTML(f, 'sm')}
                 <span style="font-size:.9rem">${ZAP.utils.esc(f.name)}</span>
               </div>
@@ -172,6 +173,7 @@
   }
 
   function renderDone() {
+    const { icon } = ZAP.utils;
     const link = createdInv.isGroup
       ? location.origin + '/g/' + createdInv.id
       : ZAP.utils.inviteLink(createdInv.id);
@@ -179,7 +181,7 @@
     return `
     <div style="animation:fadeUp .5s ease">
       <div style="text-align:center;padding:10px 0 24px">
-        <div style="font-size:2.8rem;margin-bottom:12px">🎉</div>
+        <div style="font-size:2.8rem;margin-bottom:12px">${icon('confetti', 48)}</div>
         <h2 style="font-family:var(--font-heading);font-weight:400;font-style:italic;font-size:1.9rem;margin-bottom:8px">Готово!</h2>
         <p style="color:var(--muted);margin-bottom:22px">
           ${createdInv.sentToFriends
@@ -193,12 +195,12 @@
           <button id="done-copy-btn"
             onclick="ZAP.utils.copyText('${link.replace(/'/g,"\\'")}', this)"
             style="background:var(--ink);color:var(--paper);border:none;border-radius:10px;padding:11px;font-size:.9rem;width:100%">
-            🔗 Скопіювати посилання
+            ${icon('link', 14)} Скопіювати посилання
           </button>
         </div>
       ` : ''}
       <p style="font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:20px;font-style:italic">
-        Коли людина відповість — статус оновиться автоматично 🔄
+        Коли людина відповість — статус оновиться автоматично ${icon('arrows-clockwise', 14)}
       </p>
       <div style="display:flex;gap:10px;justify-content:center">
         <button onclick="ZAP.pages.create.reset()" class="btn-ghost">Ще одне</button>

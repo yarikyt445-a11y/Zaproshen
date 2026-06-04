@@ -9,6 +9,13 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // ── Phosphor icon helper ──
+  function icon(name, size, weight) {
+    const sz = size || 20;
+    const w = weight || 'duotone';
+    return `<i class="ph ph-${name}" style="font-size:${sz}px;vertical-align:middle;line-height:1"></i>`;
+  }
+
   // ── Generate short ID ──
   function genId() {
     return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-5);
@@ -49,25 +56,25 @@
   // ── Badge HTML ──
   function badge(status) {
     const MAP = {
-      pending: ['badge-pending', '⏳', 'Очікує'],
-      accepted: ['badge-accepted', '✓', 'Прийнято'],
-      declined: ['badge-declined', '✕', 'Відхилено'],
-      reschedule: ['badge-reschedule', '↕', 'Перенесення'],
+      pending: ['badge-pending', 'clock', 'Очікує'],
+      accepted: ['badge-accepted', 'check-circle', 'Прийнято'],
+      declined: ['badge-declined', 'x-circle', 'Відхилено'],
+      reschedule: ['badge-reschedule', 'arrows-clockwise', 'Перенесення'],
     };
-    const [cls, icon, label] = MAP[status] || MAP.pending;
-    return `<span class="badge ${cls}">${icon} ${label}</span>`;
+    const [cls, iconName, label] = MAP[status] || MAP.pending;
+    return `<span class="badge ${cls}">${icon(iconName,14)} ${label}</span>`;
   }
 
   // ── Role badge ──
   function roleBadge(role) {
     const MAP = {
-      founder: ['badge-role badge-founder', '👑', 'Засновник'],
-      'tech-admin': ['badge-role badge-tech-admin', '⚙️', 'Тех-адмін'],
-      moderator: ['badge-role badge-moderator', '🛡️', 'Модератор'],
+      founder: ['badge-role badge-founder', 'crown', 'Засновник'],
+      'tech-admin': ['badge-role badge-tech-admin', 'gear', 'Тех-адмін'],
+      moderator: ['badge-role badge-moderator', 'shield-check', 'Модератор'],
       user: ['badge-role badge-user', '', 'Користувач'],
     };
-    const [cls, icon, label] = MAP[role] || MAP.user;
-    return `<span class="badge ${cls}">${icon ? icon + ' ' : ''}${label}</span>`;
+    const [cls, iconName, label] = MAP[role] || MAP.user;
+    return `<span class="badge ${cls}">${iconName ? icon(iconName,14) + ' ' : ''}${label}</span>`;
   }
 
   // ── Divider line ──
@@ -100,8 +107,8 @@
     if (!container) return;
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
-    const icons = { success: '✓', error: '✕', info: 'ℹ' };
-    el.innerHTML = `<span>${icons[type] || '✦'}</span><span>${esc(message)}</span>`;
+    const icons = { success: icon('check-circle',18), error: icon('x-circle',18), info: icon('info',18) };
+    el.innerHTML = `<span>${icons[type] || icon('info',18)}</span><span>${esc(message)}</span>`;
     container.appendChild(el);
     setTimeout(() => {
       el.classList.add('removing');
@@ -229,7 +236,7 @@
 
   // ── Expose ──
   ZAP.utils = {
-    esc, genId, genUserId, copyText, badge, roleBadge, divLine,
+    esc, icon, genId, genUserId, copyText, badge, roleBadge, divLine,
     boom, toast, formatDate, timeAgo, avatarHTML, spinner,
     TYPES, TYPE_MAP, inviteLink,
     confirm, alert, prompt,

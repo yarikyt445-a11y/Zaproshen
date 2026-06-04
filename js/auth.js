@@ -261,11 +261,6 @@
         if (currentProfile) {
           ZAP.dbRef.ref('users/' + user.uid + '/lastSeen').set(Date.now()).catch(() => { });
         }
-        // Start listening for notifications
-        ZAP.notifications.listenNotifications(user.uid, () => {
-          if (ZAP.render) ZAP.render();
-        });
-        ZAP.notifications.requestPushPermission();
       } else {
         currentProfile = null;
         ZAP.notifications.stopListeningNotifications();

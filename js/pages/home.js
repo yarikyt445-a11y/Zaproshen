@@ -29,7 +29,7 @@
   }
 
   function render() {
-    const { esc, badge, TYPE_MAP, inviteLink, copyText } = ZAP.utils;
+    const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
     const f = filter;
     const shown = f === 'all' ? invites : invites.filter(i => i.status === f);
 
@@ -84,7 +84,7 @@
             <button id="copy-${inv.id}"
               onclick="ZAP.utils.copyText('${inviteLink(inv.id).replace(/'/g,"\\'")}', this)"
               style="background:var(--warm);border:none;border-radius:8px;padding:7px 13px;font-size:.8rem;color:var(--muted)">
-              🔗 Копіювати
+              ${icon('link', 14)} Копіювати
             </button>
           </div>
         </div>`;
@@ -93,7 +93,7 @@
   }
 
   function renderModal(inv) {
-    const { esc, badge, TYPE_MAP, inviteLink, divLine } = ZAP.utils;
+    const { esc, badge, TYPE_MAP, inviteLink, divLine, icon } = ZAP.utils;
     const t = TYPE_MAP[inv.type] || TYPE_MAP.other;
     const link = inv.isGroup
       ? location.origin + '/g/' + inv.id
@@ -113,7 +113,7 @@
           <div style="display:flex;gap:8px;align-items:center">
             ${badge(inv.status)}
             <button onclick="ZAP.pages.home.closeModal()"
-              style="background:none;border:none;font-size:1.3rem;color:var(--muted);line-height:1">×</button>
+              style="background:none;border:none;font-size:1.3rem;color:var(--muted);line-height:1">${icon('x', 20)}</button>
           </div>
         </div>
 
@@ -121,12 +121,12 @@
 
         <div style="margin-bottom:14px">
           <div class="detail-row">
-            <span class="detail-icon">📅</span>
+            <span class="detail-icon">${icon('calendar-blank', 18)}</span>
             <span class="detail-label">Дата</span>
             <span class="detail-value">${esc(inv.date)}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-icon">🕐</span>
+            <span class="detail-icon">${icon('clock', 18)}</span>
             <span class="detail-label">Час</span>
             <span class="detail-value">${esc(inv.time || '')}</span>
           </div>
@@ -134,7 +134,7 @@
             <div id="modal-resc-${inv.id}"
               style="margin-top:8px;padding:10px 13px;background:rgba(201,146,42,.08);border-radius:8px;border-left:3px solid var(--gold)">
               <p style="font-size:.75rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;font-weight:500">Пропозиція отримувача</p>
-              <p style="font-size:.95rem;color:var(--ink)" id="reschedule-info-${inv.id}">⏳ Завантаження...</p>
+              <p style="font-size:.95rem;color:var(--ink)" id="reschedule-info-${inv.id}">${icon('clock', 14)} Завантаження...</p>
             </div>` : ''}
         </div>
 
@@ -145,11 +145,11 @@
             <button id="mcopy"
               onclick="ZAP.utils.copyText('${link.replace(/'/g,"\\'")}', this)"
               style="flex:1;background:var(--ink);color:var(--paper);border:none;border-radius:9px;padding:9px;font-size:.85rem">
-              🔗 Скопіювати
+               ${icon('link', 14)} Скопіювати
             </button>
             <button onclick="ZAP.pages.home.closeModal();ZAP.router.go('${inv.isGroup ? 'group-invite' : 'invite'}', {id:'${inv.id}'})"
               style="flex:1;background:none;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:.85rem;color:var(--muted)">
-              👁 Переглянути
+              ${icon('eye', 14)} Переглянути
             </button>
           </div>
         </div>
@@ -209,6 +209,7 @@
 
   // Start real-time listener for status updates
   function startListening() {
+    const { icon } = ZAP.utils;
     const user = ZAP.auth.getUser();
     if (!user) return;
     ZAP.db.listenStatuses(user.uid, statuses => {
@@ -221,7 +222,7 @@
 
           // Toast notification
           if (inv.status === 'accepted') {
-            ZAP.utils.toast(`${inv.to || 'Хтось'} прийняв запрошення! ✓`, 'success');
+            ZAP.utils.toast(`${inv.to || 'Хтось'} прийняв запрошення! ${icon('check', 14)}`, 'success');
           } else if (inv.status === 'declined') {
             ZAP.utils.toast(`${inv.to || 'Хтось'} відхилив запрошення`, 'error');
           } else if (inv.status === 'reschedule') {

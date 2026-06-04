@@ -45,16 +45,17 @@
     if (loading) return ZAP.utils.spinner();
 
     if (!userData) {
+      const { icon } = ZAP.utils;
       return `
       <div class="wrap">
         <div class="empty">
-          <div class="empty-icon">🍂</div>
+          <div class="empty-icon">${icon('leaf', 32)}</div>
           <p style="font-style:italic;font-size:1.05rem">Користувача не знайдено</p>
         </div>
       </div>`;
     }
 
-    const { esc, avatarHTML, roleBadge } = ZAP.utils;
+    const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     const isMe = me && me.uid === userData.uid;
 
@@ -73,7 +74,7 @@
             ${renderFriendButton()}
             <button class="btn btn-gold btn-sm"
               onclick="ZAP.router.go('create')">
-              ✉ Запросити
+              ${icon('paper-plane-tilt', 14)} Запросити
             </button>
           </div>
         ` : ''}
@@ -90,29 +91,31 @@
   }
 
   function renderFriendButton() {
+    const { icon } = ZAP.utils;
     switch (friendStatus) {
       case 'friend':
         return `<button class="btn btn-outline btn-sm" style="color:var(--green);border-color:var(--green)" disabled>
-          ✓ У друзях
+          ${icon('check', 14)} У друзях
         </button>`;
       case 'pending-sent':
         return `<button class="btn btn-outline btn-sm" disabled>
-          ⏳ Запит надіслано
+          ${icon('clock', 14)} Запит надіслано
         </button>`;
       case 'pending-received':
         return `<button class="btn btn-gold btn-sm"
           onclick="ZAP.pages.userProfile.acceptRequest()">
-          ✓ Прийняти запит
+          ${icon('check', 14)} Прийняти запит
         </button>`;
       default:
         return `<button class="btn btn-dark btn-sm"
           onclick="ZAP.pages.userProfile.addFriend()">
-          👋 Додати в друзі
+          ${icon('hand-waving', 14)} Додати в друзі
         </button>`;
     }
   }
 
   async function addFriend() {
+    const { icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     const myProfile = ZAP.auth.getProfile();
     if (!me || !userData) return;
@@ -121,10 +124,10 @@
       const result = await ZAP.db.sendFriendRequest(me.uid, userData.uid, myProfile.name);
       if (result === 'auto-accepted') {
         friendStatus = 'friend';
-        ZAP.utils.toast(`${userData.name} тепер ваш друг! ✓`, 'success');
+        ZAP.utils.toast(`${userData.name} тепер ваш друг! ${icon('check', 14)}`, 'success');
       } else {
         friendStatus = 'pending-sent';
-        ZAP.utils.toast('Запит надіслано ✓', 'success');
+        ZAP.utils.toast(`Запит надіслано ${icon('check', 14)}`, 'success');
       }
       ZAP.render();
     } catch (e) {
@@ -133,13 +136,14 @@
   }
 
   async function acceptRequest() {
+    const { icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     if (!me || !userData) return;
 
     try {
       await ZAP.db.acceptFriendRequest(me.uid, userData.uid);
       friendStatus = 'friend';
-      ZAP.utils.toast(`${userData.name} тепер ваш друг! ✓`, 'success');
+      ZAP.utils.toast(`${userData.name} тепер ваш друг! ${icon('check', 14)}`, 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast(e.message || 'Помилка', 'error');

@@ -8,7 +8,7 @@
 
   function render() {
     loading = false;
-    const { esc } = ZAP.utils;
+    const { esc, icon } = ZAP.utils;
     return `
     <div class="auth-bg">
       <div class="auth-card">
@@ -35,6 +35,7 @@
   }
 
   function renderLoginForm() {
+    const { icon } = ZAP.utils;
     return `
     <div class="auth-form" id="login-form">
       <div>
@@ -50,7 +51,7 @@
       <div class="form-error" id="login-error"></div>
       <button class="btn btn-dark btn-full" id="login-btn"
         onclick="ZAP.pages.login.doLogin()" ${loading ? 'disabled' : ''}>
-        ${loading ? '⏳ Зачекайте...' : 'Увійти →'}
+        ${loading ? `${icon('clock', 14)} Зачекайте...` : 'Увійти →'}
       </button>
       <div class="auth-footer">
         Ще немає акаунту?
@@ -60,6 +61,7 @@
   }
 
   function renderRegisterForm() {
+    const { icon } = ZAP.utils;
     return `
     <div class="auth-form" id="register-form">
       <div>
@@ -86,7 +88,7 @@
       </label>
       <button class="btn btn-dark btn-full" id="reg-btn"
         onclick="ZAP.pages.login.doRegister()" ${loading ? 'disabled' : ''}>
-        ${loading ? '⏳ Зачекайте...' : 'Створити акаунт →'}
+        ${loading ? `${icon('clock', 14)} Зачекайте...` : 'Створити акаунт →'}
       </button>
       <div class="auth-footer">
         Вже маєте акаунт?

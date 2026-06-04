@@ -78,11 +78,11 @@
   // Personal invite
   // ───────────────────────────────────────────────
   function renderPersonalInvite() {
-    const { esc, TYPE_MAP } = ZAP.utils;
+    const { esc, TYPE_MAP, icon } = ZAP.utils;
 
     if (!invData) {
       return `<div style="text-align:center;padding:80px 20px">
-        <div style="font-size:2rem;margin-bottom:12px">🍂</div>
+        <div style="font-size:2rem;margin-bottom:12px">${icon('leaf', 32)}</div>
         <p style="color:var(--muted);font-size:1.1rem">Запрошення не знайдено</p>
       </div>`;
     }
@@ -93,7 +93,7 @@
       <div class="invite-bg">
         <div class="invite-envelope" style="max-width:420px">
           <div class="envelope-top">
-            <span class="envelope-emoji">🔒</span>
+            <span class="envelope-emoji">${icon('lock', 24)}</span>
             <div class="envelope-type">Запрошення</div>
             <div class="envelope-to">${ZAP.utils.esc(invData.to)}</div>
           </div>
@@ -127,18 +127,18 @@
 
           <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:0">
             <div class="detail-row">
-              <span class="detail-icon">📅</span>
+              <span class="detail-icon">${icon('calendar-blank', 18)}</span>
               <span class="detail-label">Дата</span>
               <span class="detail-value">${esc(invData.date)}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-icon">🕐</span>
+              <span class="detail-icon">${icon('clock', 18)}</span>
               <span class="detail-label">Час</span>
               <span class="detail-value">${esc(invData.time)}</span>
             </div>
             ${invData.place ? `
             <div class="detail-row">
-              <span class="detail-icon">📍</span>
+              <span class="detail-icon">${icon('map-pin', 18)}</span>
               <span class="detail-label">Місце</span>
               <span class="detail-value">${esc(invData.place)}</span>
             </div>` : ''}
@@ -150,7 +150,7 @@
             <div style="text-align:center;margin-top:18px">
               <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
                 style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
-                ⚠ Поскаржитися
+                ${icon('warning', 14)} Поскаржитися
               </button>
             </div>
           ` : ''}
@@ -168,13 +168,14 @@
   }
 
   function renderButtons(invId) {
+    const { icon } = ZAP.utils;
     return `
     <div class="answer-wrap" id="answer-btns-${invId}">
       <button class="btn-yes" onclick="ZAP.pages.invite.answer('${invId}','accepted')">
-        Так, я приду! ✓
+        Так, я приду! ${icon('check', 14)}
       </button>
       <button class="btn-reschedule" onclick="ZAP.pages.invite.toggleReschedule('${invId}')">
-        📅 Перенести зустріч
+        ${icon('calendar-blank', 14)} Перенести зустріч
       </button>
       <div id="reschedule-block-${invId}" style="display:${showRescheduleForm ? 'block' : 'none'}">
         <div class="reschedule-form">
@@ -195,17 +196,18 @@
   }
 
   function renderResult(status) {
+    const { icon } = ZAP.utils;
     const results = {
       accepted: `
-        <span class="result-icon">🎊</span>
+        <span class="result-icon">${icon('confetti', 32)}</span>
         <div class="result-title" style="color:var(--green)">Ура! Так! 🌟</div>
-        <div class="result-sub">Ви погодились! Відправник дізнається автоматично ✓</div>`,
+        <div class="result-sub">Ви погодились! Відправник дізнається автоматично ${icon('check', 14)}</div>`,
       declined: `
-        <span class="result-icon">💔</span>
+        <span class="result-icon">${icon('heart-crack', 32)}</span>
         <div class="result-title" style="color:var(--red)">Відмовлено</div>
         <div class="result-sub">Ви відмовились. Відправник дізнається автоматично.</div>`,
       reschedule: `
-        <span class="result-icon">📅</span>
+        <span class="result-icon">${icon('calendar-blank', 32)}</span>
         <div class="result-title" style="color:var(--gold)">Пропозицію надіслано!</div>
         <div class="result-sub">Відправник отримає ваш варіант часу і зв'яжеться з вами.</div>`,
     };
@@ -218,11 +220,11 @@
   // Group invite
   // ───────────────────────────────────────────────
   function renderGroupInvite() {
-    const { esc, TYPE_MAP, avatarHTML } = ZAP.utils;
+    const { esc, TYPE_MAP, avatarHTML, icon } = ZAP.utils;
 
     if (!groupData) {
       return `<div style="text-align:center;padding:80px 20px">
-        <div style="font-size:2rem;margin-bottom:12px">🍂</div>
+        <div style="font-size:2rem;margin-bottom:12px">${icon('leaf', 32)}</div>
         <p style="color:var(--muted);font-size:1.1rem">Групове запрошення не знайдено</p>
       </div>`;
     }
@@ -233,7 +235,7 @@
       const invited = groupData.invited || {};
       if (!invited[user.uid] && groupData.creatorUid !== user.uid) {
         return `<div style="text-align:center;padding:80px 20px">
-          <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+          <div style="font-size:2rem;margin-bottom:12px">${icon('lock', 32)}</div>
           <p style="color:var(--muted);font-size:1.1rem">Це приватне запрошення. Ви не в списку запрошених.</p>
         </div>`;
       }
@@ -259,23 +261,23 @@
 
           <div style="background:rgba(0,0,0,.02);border-radius:12px;padding:6px 12px;margin-bottom:16px">
             <div class="detail-row">
-              <span class="detail-icon">📅</span>
+              <span class="detail-icon">${icon('calendar-blank', 18)}</span>
               <span class="detail-label">Дата</span>
               <span class="detail-value">${esc(groupData.date)}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-icon">🕐</span>
+              <span class="detail-icon">${icon('clock', 18)}</span>
               <span class="detail-label">Час</span>
               <span class="detail-value">${esc(groupData.time)}</span>
             </div>
             ${groupData.place ? `
             <div class="detail-row">
-              <span class="detail-icon">📍</span>
+              <span class="detail-icon">${icon('map-pin', 18)}</span>
               <span class="detail-label">Місце</span>
               <span class="detail-value">${esc(groupData.place)}</span>
             </div>` : ''}
             <div class="detail-row">
-              <span class="detail-icon">👤</span>
+              <span class="detail-icon">${icon('user', 18)}</span>
               <span class="detail-label">Від</span>
               <span class="detail-value">${esc(groupData.creatorName || 'Невідомий')}</span>
             </div>
@@ -313,6 +315,7 @@
   }
 
   function renderGroupJoin() {
+    const { icon } = ZAP.utils;
     const user = ZAP.auth.getUser();
 
     if (!user && groupData.isPublic) {
@@ -320,7 +323,7 @@
       if (groupData.requireAuth) {
         return `
         <div style="text-align:center;padding:16px 0">
-          <div style="font-size:1.5rem;margin-bottom:10px">🔒</div>
+          <div style="font-size:1.5rem;margin-bottom:10px">${icon('lock', 24)}</div>
           <p style="color:var(--muted);margin-bottom:12px">Для відповіді потрібно увійти в акаунт</p>
           <button class="btn btn-dark" style="width:auto;padding:10px 28px"
             onclick="ZAP.router.go('login')">Увійти</button>
@@ -335,7 +338,7 @@
             oninput="ZAP.pages.invite.setGuestName(this.value)"/>
         </div>
         <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()">
-          Так, я приду! ✓
+          Так, я приду! ${icon('check', 14)}
         </button>
         <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
           Ні, не зможу
@@ -347,7 +350,7 @@
       return `
       <div class="answer-wrap">
         <button class="btn-yes" onclick="ZAP.pages.invite.joinGroup()">
-          Так, я приду! ✓
+          Так, я приду! ${icon('check', 14)}
         </button>
         <button class="btn-no" onclick="ZAP.pages.invite.declineGroup()">
           Ні, не зможу
@@ -369,6 +372,7 @@
   // ───────────────────────────────────────────────
 
   async function answer(invId, status) {
+    const { icon } = ZAP.utils;
     // Write to Firebase
     if (ZAP.dbRef) {
       await ZAP.dbRef.ref('statuses/' + invId).set(status);
@@ -382,8 +386,8 @@
     if (invData?.creatorUid) {
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
       const titles = {
-        accepted: '✓ Запрошення прийнято!',
-        declined: '✕ Запрошення відхилено',
+        accepted: `${icon('check', 14)} Запрошення прийнято!`,
+        declined: `${icon('x', 14)} Запрошення відхилено`,
       };
       await ZAP.notifications.addNotification(invData.creatorUid, {
         type: 'invite-response',
@@ -407,6 +411,7 @@
   }
 
   async function sendReschedule(invId) {
+    const { icon } = ZAP.utils;
     const date = document.getElementById('rdate-' + invId)?.value || '';
     const time = document.getElementById('rtime-' + invId)?.value || '';
     if (!date && !time) { ZAP.utils.alert('Виберіть дату або час!'); return; }
@@ -422,7 +427,7 @@
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
       await ZAP.notifications.addNotification(invData.creatorUid, {
         type: 'invite-reschedule',
-        title: '📅 Запит на перенесення',
+        title: `${icon('calendar-blank', 14)} Запит на перенесення`,
         body: `${responderName} хоче перенести зустріч`,
         inviteId: invId,
       });
@@ -487,6 +492,7 @@
 
   // ── Report ──
   function showReport(invId) {
+    const { icon } = ZAP.utils;
     const reasons = [
       'Спам або шахрайство',
       'Образливий вміст',
@@ -499,7 +505,7 @@
     modal.onclick = e => { if (e.target === modal) modal.remove(); };
     modal.innerHTML = `
       <div class="modal" onclick="event.stopPropagation()">
-        <h3 class="modal-title">⚠ Поскаржитися</h3>
+        <h3 class="modal-title">${icon('warning', 20)} Поскаржитися</h3>
         <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px">Оберіть причину скарги:</p>
         <div class="report-reasons" id="report-reasons">
           ${reasons.map((r, i) => `

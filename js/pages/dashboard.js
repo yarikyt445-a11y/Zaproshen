@@ -26,9 +26,10 @@
   }
 
   function render() {
+    const { icon } = ZAP.utils;
     if (!ZAP.auth.isAdmin() && !ZAP.auth.isModerator()) {
       return `<div class="wrap"><div class="empty">
-        <div class="empty-icon">🔒</div>
+        <div class="empty-icon">${icon('lock', 20)}</div>
         <p style="font-style:italic;font-size:1.05rem">Доступ заборонено</p>
       </div></div>`;
     }
@@ -51,6 +52,7 @@
   }
 
   function renderSidebar() {
+    const { icon } = ZAP.utils;
     const profile = ZAP.auth.getProfile();
     const pendingReports = reports.filter(r => r.status === 'pending').length;
     const isModeOnly = ZAP.auth.isModerator() && !ZAP.auth.isAdmin();
@@ -63,25 +65,25 @@
       ${!isModeOnly ? `
       <button class="sidebar-item ${dashTab === 'overview' ? 'active' : ''}"
         onclick="ZAP.pages.dashboard.setTab('overview')">
-        <span class="sidebar-item-icon">📊</span> Огляд
+        <span class="sidebar-item-icon">${icon('chart-bar', 20)}</span> Огляд
       </button>
       ` : ''}
       <button class="sidebar-item ${dashTab === 'users' ? 'active' : ''}"
         onclick="ZAP.pages.dashboard.setTab('users')">
-        <span class="sidebar-item-icon">👥</span> Користувачі
+        <span class="sidebar-item-icon">${icon('users', 20)}</span> Користувачі
       </button>
       <button class="sidebar-item ${dashTab === 'reports' ? 'active' : ''}"
         onclick="ZAP.pages.dashboard.setTab('reports')">
-        <span class="sidebar-item-icon">⚠️</span> Скарги
+        <span class="sidebar-item-icon">${icon('warning', 20)}</span> Скарги
         ${pendingReports > 0 ? `<span class="notif-badge" style="position:static;margin-left:auto">${pendingReports}</span>` : ''}
       </button>
 
       <div class="sidebar-section">Навігація</div>
       <button class="sidebar-item" onclick="ZAP.router.go('home')">
-        <span class="sidebar-item-icon">🏠</span> Головна
+        <span class="sidebar-item-icon">${icon('house', 20)}</span> Головна
       </button>
       <button class="sidebar-item" onclick="ZAP.router.go('profile')">
-        <span class="sidebar-item-icon">⚙️</span> Профіль
+        <span class="sidebar-item-icon">${icon('gear', 20)}</span> Профіль
       </button>
 
       <div style="margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.08)">
@@ -107,22 +109,23 @@
   // Overview
   // ═══════════════════════════════════════════════════════
   function renderOverview() {
+    const { icon } = ZAP.utils;
     const onlineUsers = users.filter(u => u.lastSeen && (Date.now() - u.lastSeen < 2 * 60 * 1000));
     const onlineCount = onlineUsers.length;
 
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <h1 class="page-title" style="margin-bottom:0">Дашборд</h1>
-      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">☰</button>
+      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">${icon('list', 20)}</button>
     </div>
 
     <!-- Stats cards -->
     <div class="stats-grid">
-      ${statCard('👤', 'users', 'Користувачі', stats?.totalUsers || 0)}
-      ${statCard('🟢', 'online', 'Онлайн зараз', onlineCount)}
-      ${statCard('📨', 'invites', 'Запрошення', stats?.totalInvites || 0)}
-      ${statCard('✅', 'accepted', 'Прийняті', stats?.acceptedInvites || 0)}
-      ${statCard('📈', 'active', 'Активні (7д)', stats?.activeUsers || 0)}
+      ${statCard(icon('user', 20), 'users', 'Користувачі', stats?.totalUsers || 0)}
+      ${statCard('<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2d7a4f"></span>', 'online', 'Онлайн зараз', onlineCount)}
+      ${statCard(icon('paper-plane-tilt', 20), 'invites', 'Запрошення', stats?.totalInvites || 0)}
+      ${statCard(icon('check-circle', 20), 'accepted', 'Прийняті', stats?.acceptedInvites || 0)}
+      ${statCard(icon('chart-bar', 20), 'active', 'Активні (7д)', stats?.activeUsers || 0)}
     </div>
 
     <!-- Charts -->
@@ -150,7 +153,7 @@
         </div>
         <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">👑 Засновники</span>
+            <span style="color:var(--muted)">${icon('crown', 20)} Засновники</span>
             <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.founder || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
@@ -158,15 +161,15 @@
             <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.techAdmin || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">🛡 Модератори</span>
+            <span style="color:var(--muted)">${icon('shield-check', 20)} Модератори</span>
             <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.moderator || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">👥 Звичайні користувачі</span>
+            <span style="color:var(--muted)">${icon('users', 20)} Звичайні користувачі</span>
             <span style="font-weight:600;color:var(--ink)">${stats?.roleCounts?.user || 0}</span>
           </div>
           <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--red);font-weight:500">🚫 Заблоковані користувачі</span>
+            <span style="color:var(--red);font-weight:500">${icon('prohibit', 20)} Заблоковані користувачі</span>
             <span style="font-weight:600;color:var(--red)">${stats?.bannedCount || 0}</span>
           </div>
         </div>
@@ -179,19 +182,19 @@
         </div>
         <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">✅ Прийняті запрошення</span>
+            <span style="color:var(--muted)">${icon('check-circle', 20)} Прийняті запрошення</span>
             <span style="font-weight:600;color:var(--green)">${stats?.acceptedInvites || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">❌ Відхилені запрошення</span>
+            <span style="color:var(--muted)">${icon('x-circle', 20)} Відхилені запрошення</span>
             <span style="font-weight:600;color:var(--red)">${stats?.declinedInvites || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">📅 Перенесені події</span>
+            <span style="color:var(--muted)">${icon('calendar-blank', 20)} Перенесені події</span>
             <span style="font-weight:600;color:var(--gold)">${stats?.rescheduleInvites || 0}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:.9rem">
-            <span style="color:var(--muted)">⏳ В очікуванні відповіді</span>
+            <span style="color:var(--muted)">${icon('clock', 20)} В очікуванні відповіді</span>
             <span style="font-weight:600;color:var(--ink)">
               ${(stats?.totalInvites || 0) - (stats?.acceptedInvites || 0) - (stats?.declinedInvites || 0) - (stats?.rescheduleInvites || 0)}
             </span>
@@ -236,7 +239,7 @@
       </div>
       ${onlineCount === 0 ? `
         <div style="text-align:center;padding:24px 0;color:var(--muted);font-style:italic;font-size:0.95rem">
-          🟢 Наразі немає користувачів у мережі
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2d7a4f"></span> Наразі немає користувачів у мережі
         </div>
       ` : `
         <div class="table-scroll-wrap">
@@ -275,7 +278,7 @@
         <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
           <div>
             <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px">
-              <span>👤 Персональні запрошення</span>
+              <span>${icon('user', 20)} Персональні запрошення</span>
               <span style="font-weight:600">${stats?.personalInvitesCount || 0}</span>
             </div>
             <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
@@ -284,7 +287,7 @@
           </div>
           <div>
             <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px">
-              <span>👥 Групові події</span>
+              <span>${icon('users', 20)} Групові події</span>
               <span style="font-weight:600">${stats?.groupInvitesCount || 0}</span>
             </div>
             <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
@@ -342,7 +345,7 @@
         <tbody>
           ${users.slice(0, 5).map(u => {
             const statusBadge = u.banned
-              ? `<span class="badge badge-declined">🚫 Бан</span>`
+              ? `<span class="badge badge-declined">${icon('prohibit', 20)} Бан</span>`
               : '<span class="badge badge-accepted">✓ Активний</span>';
 
             return `
@@ -378,6 +381,7 @@
   // Users management
   // ═══════════════════════════════════════════════════════
   function renderUsers() {
+    const { icon } = ZAP.utils;
     const filtered = userSearch
       ? users.filter(u =>
           u.login.toLowerCase().includes(userSearch.toLowerCase()) ||
@@ -393,13 +397,13 @@
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <h1 class="page-title" style="margin-bottom:0">Користувачі</h1>
-      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">☰</button>
+      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">${icon('list', 20)}</button>
     </div>
 
     <div class="table-card">
       <div class="table-header">
         <h2>Всього: ${filtered.length}</h2>
-        <input class="table-search" placeholder="🔍 Пошук по логіну або імені..."
+        <input class="table-search" placeholder="${icon('magnifying-glass', 16)} Пошук по логіну або імені..."
           value="${ZAP.utils.esc(userSearch)}"
           oninput="ZAP.pages.dashboard.searchUsers(this.value)"
           aria-label="Пошук користувачів"/>
@@ -423,14 +427,14 @@
                 if (msLeft > 0) {
                   const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
                   const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
-                  banStatusText = daysLeft > 1 ? `🚫 Бан · ${daysLeft} дн.` : `🚫 Бан · ${hoursLeft} год.`;
+                  banStatusText = daysLeft > 1 ? `${icon('prohibit', 20)} Бан · ${daysLeft} дн.` : `${icon('prohibit', 20)} Бан · ${hoursLeft} год.`;
                 } else {
                   ZAP.db.banUser(u.uid, false);
                   u.banned = false;
                   u.bannedUntil = null;
                 }
               } else {
-                banStatusText = '🚫 Назавжди';
+                banStatusText = `${icon('prohibit', 20)} Назавжди`;
               }
             }
 
@@ -489,13 +493,14 @@
   // Reports / Complaints
   // ═══════════════════════════════════════════════════════
   function renderReports() {
+    const { icon } = ZAP.utils;
     const pending = reports.filter(r => r.status === 'pending');
     const resolved = reports.filter(r => r.status !== 'pending');
 
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <h1 class="page-title" style="margin-bottom:0">Скарги</h1>
-      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">☰</button>
+      <button class="hamburger" onclick="ZAP.pages.dashboard.toggleSidebar()">${icon('list', 20)}</button>
     </div>
 
     ${pending.length > 0 ? `
@@ -518,6 +523,7 @@
   }
 
   function renderReportCard(r, isResolved) {
+    const { icon } = ZAP.utils;
     let invitePreview = '';
     
     // Helper to find profile in loaded users array
@@ -527,7 +533,7 @@
       const tc = r.targetContent;
       const dateText = tc.date || 'Не вказано';
       const timeText = tc.time ? `, ${tc.time}` : '';
-      const placeText = tc.place ? ` · 📍 ${ZAP.utils.esc(tc.place)}` : '';
+      const placeText = tc.place ? ` · ${icon('map-pin', 20)} ${ZAP.utils.esc(tc.place)}` : '';
 
       const creatorUid = tc.creatorUid || '';
       const recipientUid = tc.recipientUid || (r.reporterUid && r.targetType === 'invite' ? r.reporterUid : '');
@@ -553,7 +559,7 @@
           <div class="cip-content">
             ${tc.msg ? `<p class="cip-msg">« ${ZAP.utils.esc(tc.msg)} »</p>` : '<p class="cip-msg" style="font-style:italic;color:var(--muted)">Без тексту повідомлення</p>'}
             <div class="cip-details" style="font-size:.78rem;color:var(--muted);margin-top:5px">
-              📅 ${ZAP.utils.esc(dateText)}${timeText}${placeText}
+              ${icon('calendar-blank', 20)} ${ZAP.utils.esc(dateText)}${timeText}${placeText}
             </div>
           </div>
         </div>
@@ -567,14 +573,14 @@
 
     return `
     <div class="complaint-card ${isResolved ? 'resolved' : ''}">
-      <div class="complaint-icon">⚠️</div>
+      <div class="complaint-icon">${icon('warning', 20)}</div>
       <div class="complaint-body">
         <div class="complaint-reason">${ZAP.utils.esc(r.reason)}</div>
         <div class="complaint-meta">
           Від: ${ZAP.utils.esc(r.reporterName || 'Анонім')}${reporterIdText} ·
-          Тип: ${r.targetType === 'invite' ? '📨 Запрошення' : '👥 Групове'} ·
+          Тип: ${r.targetType === 'invite' ? `${icon('paper-plane-tilt', 20)} Запрошення` : `${icon('users', 20)} Групове`} ·
           ${ZAP.utils.timeAgo(r.createdAt)}
-          ${r.comment ? `<br>💬 ${ZAP.utils.esc(r.comment)}` : ''}
+          ${r.comment ? `<br>${icon('chat-circle-dots', 20)} ${ZAP.utils.esc(r.comment)}` : ''}
         </div>
         ${invitePreview}
         ${!isResolved ? `
@@ -590,7 +596,7 @@
             ${r.targetId ? `
               <button class="btn btn-sm btn-outline"
                 onclick="ZAP.pages.dashboard.deleteReportedInvite('${r.targetId}','${r.targetType}','${r.id}')">
-                🗑 Видалити запрошення
+                ${icon('trash', 20)} Видалити запрошення
               </button>
             ` : ''}
           </div>
@@ -775,6 +781,7 @@
   }
 
   function searchUsers(q) {
+    const { icon } = ZAP.utils;
     userSearch = q;
     userPage = 0;
 
@@ -809,14 +816,14 @@
             if (msLeft > 0) {
               const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
               const hoursLeft = Math.ceil(msLeft / (60 * 60 * 1000));
-              banStatusText = daysLeft > 1 ? `🚫 Бан · ${daysLeft} дн.` : `🚫 Бан · ${hoursLeft} год.`;
+              banStatusText = daysLeft > 1 ? `${icon('prohibit', 20)} Бан · ${daysLeft} дн.` : `${icon('prohibit', 20)} Бан · ${hoursLeft} год.`;
             } else {
               ZAP.db.banUser(u.uid, false);
               u.banned = false;
               u.bannedUntil = null;
             }
           } else {
-            banStatusText = '🚫 Назавжди';
+            banStatusText = `${icon('prohibit', 20)} Назавжди`;
           }
         }
 

@@ -18,8 +18,6 @@
     const profile = ZAP.auth.getProfile();
 
     const isPageChange = (route.page !== lastPage || JSON.stringify(route.params) !== lastParamsStr);
-    lastPage = route.page;
-    lastParamsStr = JSON.stringify(route.params);
 
     // Dynamic page title
     const pageTitles = {
@@ -86,6 +84,10 @@
       return;
     }
 
+    // Update page tracking AFTER authReady check
+    lastPage = route.page;
+    lastParamsStr = JSON.stringify(route.params);
+
     // ── Auth required pages ──
     if (!user && ZAP.router.isAuthRequired(route.page)) {
       app.innerHTML = ZAP.pages.login.render();
@@ -130,7 +132,7 @@
         app.innerHTML = `
           <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
             <div style="text-align:center;max-width:400px">
-              <div style="font-size:3rem;margin-bottom:16px">🚫</div>
+              <div style="font-size:3rem;margin-bottom:16px"><i class="ph ph-prohibit" style="font-size:3rem"></i></div>
               <h2 style="font-family:var(--font-heading);font-style:italic;margin-bottom:8px">${banStatusTitle}</h2>
               <p style="color:var(--muted);margin-bottom:20px;line-height:1.6">${banStatusBody}</p>
               <button class="btn btn-outline" onclick="ZAP.pages.profile.doLogout()">Вийти</button>
@@ -226,29 +228,29 @@
   // ── Topbar ──
   function renderTopbar(page) {
     const profile = ZAP.auth.getProfile();
-    const { esc, avatarHTML, roleBadge } = ZAP.utils;
+    const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
     const isAdminUser = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
 
     const fbStatus = ZAP.dbRef
       ? `<span title="Firebase підключено" style="font-size:.7rem;color:var(--muted);display:flex;align-items:center"><span class="fb-dot ok"></span>синх.</span>`
-      : `<span title="Firebase не підключено" style="font-size:.7rem;color:var(--red)">⚠ Firebase</span>`;
+      : `<span title="Firebase не підключено" style="font-size:.7rem;color:var(--red)">${icon('warning-circle',16)} Firebase</span>`;
 
     return `
     <header class="topbar">
       <button class="logo" onclick="ZAP.router.go('home')">Запрошення ✦</button>
       <div class="topbar-right">
         ${fbStatus}
-        <button class="nb ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">🏠 Мої</button>
+        <button class="nb ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">${icon('house',18)} Мої</button>
         <button class="nb ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">+ Нове</button>
         <div class="pill-wrap">
-          <button class="nb ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')">👥</button>
+          <button class="nb ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')">${icon('users',18)}</button>
         </div>
         <div class="pill-wrap">
-          <button class="nb ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')">🔔</button>
+          <button class="nb ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')">${icon('bell',18)}</button>
           ${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
         </div>
         ${isAdminUser ? `
-          <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">📊</button>
+          <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')">${icon('chart-bar',18)}</button>
         ` : ''}
         ${profile ? `
           <div class="topbar-user" onclick="ZAP.router.go('profile')">
@@ -265,26 +267,27 @@
   // ── Bottom Navigation (Mobile) ──
   function renderBottomNav(page) {
     const isAdminUser = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
+    const { icon } = ZAP.utils;
     return `
     <nav class="bottom-nav">
       <button class="bn-item ${page === 'home' ? 'on' : ''}" onclick="ZAP.router.go('home')">
-        <div style="font-size:1.25rem">🏠</div>
+        <div style="font-size:1.25rem">${icon('house',22)}</div>
         <span>Мої</span>
       </button>
       <button class="bn-item ${page === 'friends' ? 'on' : ''}" onclick="ZAP.router.go('friends')">
-        <div style="font-size:1.25rem">👥</div>
+        <div style="font-size:1.25rem">${icon('users',22)}</div>
         <span>Друзі</span>
       </button>
       <button class="bn-item ${page === 'create' ? 'on' : ''}" onclick="ZAP.router.go('create')">
         <div class="bn-fab">+</div>
       </button>
       <button class="bn-item ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')" style="position:relative">
-        <div style="font-size:1.25rem">🔔</div>
+        <div style="font-size:1.25rem">${icon('bell',22)}</div>
         ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:0;right:2px;font-size:.6rem;padding:1px 4px">${unreadCount}</span>` : ''}
         <span>Сповіщ.</span>
       </button>
       <button class="bn-item ${page === 'profile' || page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('${isAdminUser ? 'dashboard' : 'profile'}')">
-        <div style="font-size:1.25rem">${isAdminUser ? '📊' : '👤'}</div>
+        <div style="font-size:1.25rem">${isAdminUser ? icon('chart-bar',22) : icon('user',22)}</div>
         <span>${isAdminUser ? 'Панель' : 'Профіль'}</span>
       </button>
     </nav>`;
@@ -314,20 +317,21 @@
       setTimeout(() => el.remove(), 300);
     });
 
+    const { icon } = ZAP.utils;
     const iconMap = {
-      'friend-request': '👋',
-      'friend-accepted': '✅',
-      'invite': '📨',
-      'group-invite': '👥',
-      'invite-response': '💬',
-      'invite-reschedule': '📅',
+      'friend-request': icon('user-plus',24),
+      'friend-accepted': icon('check-circle',24),
+      'invite': icon('paper-plane-tilt',24),
+      'group-invite': icon('users',24),
+      'invite-response': icon('chat-circle-dots',24),
+      'invite-reschedule': icon('calendar-blank',24),
     };
-    const icon = iconMap[notif.type] || '🔔';
+    const iconHtml = iconMap[notif.type] || icon('bell',24);
 
     const popup = document.createElement('div');
     popup.className = 'notif-popup';
     popup.innerHTML = `
-      <div class="notif-popup-icon">${icon}</div>
+      <div class="notif-popup-icon">${iconHtml}</div>
       <div class="notif-popup-body">
         <div class="notif-popup-title">${ZAP.utils.esc(notif.title || 'Сповіщення')}</div>
         <div class="notif-popup-text">${ZAP.utils.esc(notif.body || '')}</div>
@@ -377,18 +381,19 @@
       return `
       <h1 class="page-title">Сповіщення</h1>
       <div class="empty">
-        <div class="empty-icon">🔔</div>
+        <div class="empty-icon"><i class="ph ph-bell-ringing" style="font-size:3rem"></i></div>
         <p style="font-style:italic;font-size:1.05rem">Немає сповіщень</p>
       </div>`;
     }
 
+    const { icon: phIcon } = ZAP.utils;
     const iconMap = {
-      'friend-request': '👋',
-      'friend-accepted': '✓',
-      'invite': '📨',
-      'group-invite': '👥',
-      'invite-response': '💬',
-      'invite-reschedule': '📅',
+      'friend-request': phIcon('user-plus',20),
+      'friend-accepted': phIcon('check-circle',20),
+      'invite': phIcon('paper-plane-tilt',20),
+      'group-invite': phIcon('users',20),
+      'invite-response': phIcon('chat-circle-dots',20),
+      'invite-reschedule': phIcon('calendar-blank',20),
     };
 
     // Track processed friend requests to prevent duplicate actions
@@ -401,7 +406,7 @@
     <h1 class="page-title">Сповіщення</h1>
     <p class="page-subtitle">Ваші останні сповіщення</p>
     ${notifs.map((n, i) => {
-      const icon = iconMap[n.type] || '✦';
+      const notifIcon = iconMap[n.type] || phIcon('info',20);
       let actionBtn = '';
       const isProcessed = (n.type === 'friend-request' && n.fromUid && friendUids.has(n.fromUid)) || processedReqs.has(n.fromUid);
 
@@ -425,7 +430,7 @@
 
       return `
       <div class="notif-item ${n.read ? '' : 'unread'} ${isProcessed ? 'processed' : ''}" style="animation-delay:${i * 40}ms">
-        <div class="notif-icon">${icon}</div>
+        <div class="notif-icon">${notifIcon}</div>
         <div class="notif-body">
           <div class="notif-text"><strong>${ZAP.utils.esc(n.title || '')}</strong></div>
           <div class="notif-text">${ZAP.utils.esc(n.body || '')}</div>

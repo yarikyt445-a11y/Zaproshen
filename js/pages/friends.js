@@ -36,7 +36,7 @@
   }
 
   function render() {
-    const { esc, avatarHTML } = ZAP.utils;
+    const { esc, avatarHTML, icon } = ZAP.utils;
 
     return `
     <h1 class="page-title">Друзі</h1>
@@ -48,7 +48,7 @@
         aria-label="Пошук друга за ID"
         onkeydown="if(event.key==='Enter')ZAP.pages.friends.search()"/>
       <button class="btn btn-dark" onclick="ZAP.pages.friends.search()" ${searchLoading ? 'disabled' : ''}>
-        ${searchLoading ? '⏳' : '🔍 Знайти'}
+        ${searchLoading ? icon('clock', 14) : `${icon('magnifying-glass', 14)} Знайти`}
       </button>
     </div>
 
@@ -62,11 +62,11 @@
       </button>
       <button class="tab ${tab === 'requests' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('requests')">
-        👋 Запити ${requests.length > 0 ? `(${requests.length})` : ''}
+        ${icon('hand-waving', 18)} Запити ${requests.length > 0 ? `(${requests.length})` : ''}
       </button>
       <button class="tab ${tab === 'invites' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('invites')">
-        📨 Запрошення ${friendInvites.length > 0 ? `(${friendInvites.length})` : ''}
+        ${icon('paper-plane-tilt', 18)} Запрошення ${friendInvites.length > 0 ? `(${friendInvites.length})` : ''}
       </button>
     </div>
 
@@ -80,6 +80,7 @@
   }
 
   function renderFriendsList() {
+    const { icon } = ZAP.utils;
     if (friends.length === 0) {
       return `
       <div class="empty">
@@ -90,7 +91,7 @@
     }
 
     return friends.map((f, i) => {
-      const { esc, avatarHTML } = ZAP.utils;
+    const { esc, avatarHTML, icon } = ZAP.utils;
       return `
       <div class="friend-card" style="animation-delay:${i * 40}ms">
         ${avatarHTML(f)}
@@ -99,21 +100,22 @@
         </div>
         <div class="friend-actions">
           <button class="btn-icon" title="Профіль"
-            onclick="ZAP.router.go('user-profile', {uid:'${f.uid}'})">👤</button>
+            onclick="ZAP.router.go('user-profile', {uid:'${f.uid}'})">${icon('user', 14)}</button>
           <button class="btn-icon" title="Запросити"
-            onclick="ZAP.router.go('create')">✉</button>
+            onclick="ZAP.router.go('create')">${icon('paper-plane-tilt', 14)}</button>
           <button class="btn-icon" title="Видалити з друзів" style="color:var(--red)"
-            onclick="ZAP.pages.friends.removeFriend('${f.uid}','${esc(f.name)}')">✕</button>
+            onclick="ZAP.pages.friends.removeFriend('${f.uid}','${esc(f.name)}')">${icon('x', 14)}</button>
         </div>
       </div>`;
     }).join('');
   }
 
   function renderRequests() {
+    const { icon } = ZAP.utils;
     if (requests.length === 0) {
       return `
       <div class="empty">
-        <div class="empty-icon">👋</div>
+        <div class="empty-icon">${icon('hand-waving', 32)}</div>
         <p style="font-style:italic;font-size:1.05rem">Немає запитів на дружбу</p>
       </div>`;
     }
@@ -134,9 +136,9 @@
         ` : `
           <div class="friend-actions">
             <button class="btn btn-gold btn-sm"
-              onclick="ZAP.pages.friends.acceptReq('${req.fromUid}')">✓ Прийняти</button>
+              onclick="ZAP.pages.friends.acceptReq('${req.fromUid}')">${icon('check', 14)} Прийняти</button>
             <button class="btn btn-outline btn-sm"
-              onclick="ZAP.pages.friends.declineReq('${req.fromUid}')">✕</button>
+              onclick="ZAP.pages.friends.declineReq('${req.fromUid}')">${icon('x', 14)}</button>
           </div>
         `}
       </div>
@@ -144,10 +146,11 @@
   }
 
   function renderFriendInvites() {
+    const { icon } = ZAP.utils;
     if (friendInvites.length === 0) {
       return `
       <div class="empty">
-        <div class="empty-icon">📨</div>
+        <div class="empty-icon">${icon('paper-plane-tilt', 32)}</div>
         <p style="font-style:italic;font-size:1.05rem;margin-bottom:8px">Немає запрошень від друзів</p>
         <p style="font-size:.88rem;color:var(--muted)">Коли друзі надішлють вам запрошення, вони з'являться тут</p>
       </div>`;
@@ -155,7 +158,7 @@
 
     return friendInvites.map((n, i) => `
       <div class="notif-item unread" style="animation-delay:${i * 40}ms">
-        <div class="notif-icon">${n.type === 'group-invite' ? '👥' : '📨'}</div>
+        <div class="notif-icon">${n.type === 'group-invite' ? '👥' : icon('paper-plane-tilt', 18)}</div>
         <div class="notif-body">
           <div class="notif-text">${ZAP.utils.esc(n.body)}</div>
           <div class="notif-time">${ZAP.utils.timeAgo(n.createdAt)}</div>
@@ -240,6 +243,7 @@
   }
 
   async function acceptReq(fromUid) {
+    const { icon } = ZAP.utils;
     const me = ZAP.auth.getUser();
     if (!me) return;
     
@@ -252,7 +256,7 @@
       requests = requests.filter(r => r.fromUid !== fromUid);
       friends = await ZAP.db.getFriends(me.uid);
       await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
-      ZAP.utils.toast('Друга додано ✓', 'success');
+      ZAP.utils.toast(`Друга додано ${icon('check', 14)}`, 'success');
       ZAP.render();
     } catch (e) {
       ZAP.utils.toast(e.message || 'Помилка', 'error');
