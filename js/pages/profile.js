@@ -122,11 +122,11 @@
       ${stats ? `
         <div class="profile-field">
           <div class="profile-field-label">Створені запрошення</div>
-          <div class="profile-field-value" style="font-weight:600">${stats.totalInvites}</div>
+          <div class="profile-field-value">${stats.totalInvites}</div>
         </div>
         <div class="profile-field">
           <div class="profile-field-label">Типи (Персональні / Групове)</div>
-          <div class="profile-field-value" style="color:var(--muted)">
+          <div class="profile-field-value">
             ${icon('user', 14)} ${stats.personalCount} / ${icon('users', 14)} ${stats.groupCount}
           </div>
         </div>
@@ -139,7 +139,7 @@
         </div>
         <div class="profile-field">
           <div class="profile-field-label">Кількість друзів</div>
-          <div class="profile-field-value" style="font-weight:600">${icon('users', 14)} ${stats.totalFriends}</div>
+          <div class="profile-field-value">${icon('users', 14)} ${stats.totalFriends}</div>
         </div>
       ` : ''}
     </div>

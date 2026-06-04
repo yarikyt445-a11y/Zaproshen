@@ -58,7 +58,7 @@
     <div class="tabs">
       <button class="tab ${tab === 'friends' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('friends')">
-        👥 Друзі ${friends.length > 0 ? `(${friends.length})` : ''}
+        ${icon('users', 18)} Друзі ${friends.length > 0 ? `(${friends.length})` : ''}
       </button>
       <button class="tab ${tab === 'requests' ? 'active' : ''}"
         onclick="ZAP.pages.friends.setTab('requests')">
@@ -84,7 +84,7 @@
     if (friends.length === 0) {
       return `
       <div class="empty">
-        <div class="empty-icon">👥</div>
+        <div class="empty-icon"><i class="ph ph-users" style="font-size:3rem"></i></div>
         <p style="font-style:italic;font-size:1.05rem;margin-bottom:8px">Ще немає друзів</p>
         <p style="font-size:.88rem;color:var(--muted)">Знайдіть друзів за їх унікальним ID</p>
       </div>`;
@@ -158,7 +158,7 @@
 
     return friendInvites.map((n, i) => `
       <div class="notif-item unread" style="animation-delay:${i * 40}ms">
-        <div class="notif-icon">${n.type === 'group-invite' ? '👥' : icon('paper-plane-tilt', 18)}</div>
+        <div class="notif-icon">${n.type === 'group-invite' ? icon('users', 18) : icon('paper-plane-tilt', 18)}</div>
         <div class="notif-body">
           <div class="notif-text">${ZAP.utils.esc(n.body)}</div>
           <div class="notif-time">${ZAP.utils.timeAgo(n.createdAt)}</div>

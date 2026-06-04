@@ -36,7 +36,7 @@
       <button class="tab ${mode === 'personal' ? 'active' : ''}"
         onclick="ZAP.pages.create.setMode('personal')">${icon('user', 18)} Персональне</button>
       <button class="tab ${mode === 'group' ? 'active' : ''}"
-        onclick="ZAP.pages.create.setMode('group')">👥 Групове</button>
+        onclick="ZAP.pages.create.setMode('group')">${icon('users', 18)} Групове</button>
     </div>
 
     <div id="cform" style="display:flex;flex-direction:column;gap:24px">
