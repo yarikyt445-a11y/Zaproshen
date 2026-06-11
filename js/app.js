@@ -227,13 +227,24 @@
       ${renderFooter(route.page)}
       ${user ? renderBottomNav(route.page) : ''}
     `;
+
+    // Dynamic admin UI injection (not visible to regular users)
+    if (user && (ZAP.auth.isAdmin() || ZAP.auth.isModerator())) {
+      if (window.ZAP_ADMIN) {
+        window.ZAP_ADMIN.addControls(route.page);
+      } else {
+        const s = document.createElement('script');
+        s.src = '/js/admin.js';
+        s.onload = function () { window.ZAP_ADMIN.addControls(route.page); };
+        document.body.appendChild(s);
+      }
+    }
   }
 
   // ── Topbar ──
   function renderTopbar(page) {
     const profile = ZAP.auth.getProfile();
     const { esc, avatarHTML, roleBadge, icon } = ZAP.utils;
-    const isAdminUser = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
 
     return `
     <header class="topbar">
@@ -248,9 +259,6 @@
           <button class="nb ${page === 'notifications' ? 'on' : ''}" onclick="ZAP.router.go('notifications')" aria-label="Сповіщення">${icon('bell',18)}</button>
           ${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
         </div>
-        ${isAdminUser ? `
-          <button class="nb ${page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('dashboard')" aria-label="Дашборд">${icon('chart-bar',18)}</button>
-        ` : ''}
         ${profile ? `
           <div class="topbar-user" onclick="ZAP.router.go('profile')">
             ${avatarHTML(profile, 'sm')}
@@ -265,7 +273,6 @@
 
   // ── Bottom Navigation (Mobile) ──
   function renderBottomNav(page) {
-    const isAdminUser = ZAP.auth.isAdmin() || ZAP.auth.isModerator();
     const { icon } = ZAP.utils;
     return `
     <nav class="bottom-nav">
@@ -285,9 +292,9 @@
         ${unreadCount > 0 ? `<span class="notif-badge" style="position:absolute;top:0;right:2px;font-size:.6rem;padding:1px 4px">${unreadCount}</span>` : ''}
         <span>Сповіщ.</span>
       </button>
-      <button class="bn-item ${page === 'profile' || page === 'dashboard' ? 'on' : ''}" onclick="ZAP.router.go('${isAdminUser ? 'dashboard' : 'profile'}')">
-        <div style="font-size:1.25rem">${isAdminUser ? icon('chart-bar',22) : icon('user',22)}</div>
-        <span>${isAdminUser ? 'Панель' : 'Профіль'}</span>
+      <button class="bn-item ${page === 'profile' ? 'on' : ''}" onclick="ZAP.router.go('profile')">
+        <div style="font-size:1.25rem">${icon('user',22)}</div>
+        <span>Профіль</span>
       </button>
     </nav>`;
   }
