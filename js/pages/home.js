@@ -7,6 +7,8 @@
   let invites = [];
   let modalInv = null;
   let loaded = false;
+  let activeTab = 'outgoing';
+  let incomingInvites = [];
 
   async function load() {
     const user = ZAP.auth.getUser();
@@ -25,10 +27,35 @@
         }
       });
     }
+
+    // Load incoming invitations from notifications
+    const notifs = await ZAP.notifications.getNotifications(user.uid);
+    incomingInvites = notifs.filter(n =>
+      (n.type === 'invite' || n.type === 'group-invite') && n.inviteId
+    );
+
     loaded = true;
   }
 
   function render() {
+    const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
+    const incomingCount = incomingInvites.length;
+
+    return `
+    <h1 class="page-title">Запрошення</h1>
+    <p class="page-subtitle">Статуси оновлюються автоматично ✦</p>
+
+    <div class="tabs">
+      <button class="tab ${activeTab === 'outgoing' ? 'active' : ''}"
+        onclick="ZAP.pages.home.setTab('outgoing')">Мої запрошення</button>
+      <button class="tab ${activeTab === 'incoming' ? 'active' : ''}"
+        onclick="ZAP.pages.home.setTab('incoming')">Від друзів${incomingCount > 0 ? `<span class="tab-count">${incomingCount}</span>` : ''}</button>
+    </div>
+
+    ${activeTab === 'outgoing' ? renderOutgoing() : renderIncoming()}`;
+  }
+
+  function renderOutgoing() {
     const { esc, badge, TYPE_MAP, inviteLink, copyText, icon } = ZAP.utils;
     const f = filter;
     const shown = f === 'all' ? invites : invites.filter(i => i.status === f);
@@ -42,9 +69,6 @@
     };
 
     return `
-    <h1 class="page-title">Мої запрошення</h1>
-    <p class="page-subtitle">Статуси оновлюються автоматично ✦</p>
-
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px" id="filter-bar">
       ${[['all','Всі'],['pending','Очікують'],['accepted','Прийняті'],['declined','Відхилені'],['reschedule','Перенесення']]
         .map(([v, l]) => `
@@ -90,6 +114,43 @@
         </div>`;
       }).join('')
     }`;
+  }
+
+  function renderIncoming() {
+    const { esc, TYPE_MAP, icon } = ZAP.utils;
+
+    if (!loaded) return ZAP.utils.spinner();
+
+    if (incomingInvites.length === 0) {
+      return `
+      <div class="empty">
+        <div class="empty-icon">${icon('paper-plane-tilt', 32)}</div>
+        <p style="font-style:italic;font-size:1.05rem;margin-bottom:8px">Немає запрошень від друзів</p>
+        <p style="font-size:.88rem;color:var(--muted)">Коли друзі надішлють вам запрошення, вони з'являться тут</p>
+      </div>`;
+    }
+
+    return incomingInvites.map((n, i) => {
+      const isGroup = n.type === 'group-invite';
+      return `
+      <div class="inv-card" style="animation-delay:${i * 40}ms;cursor:pointer"
+        onclick="ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
+        <div style="font-size:1.8rem;flex-shrink:0">${isGroup ? icon('users', 28) : icon('paper-plane-tilt', 28)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <span style="font-weight:600;font-size:1rem">${esc(n.body || 'Запрошення')}</span>
+            <span class="badge badge-pending">${isGroup ? 'Група' : 'Особисте'}</span>
+          </div>
+          <div style="color:var(--muted);font-size:.85rem">${ZAP.utils.timeAgo(n.createdAt)}</div>
+        </div>
+        <div onclick="event.stopPropagation()" style="flex-shrink:0">
+          <button class="btn btn-gold btn-sm"
+            onclick="ZAP.router.go('${isGroup ? 'group-invite' : 'invite'}', {id:'${n.inviteId}'})">
+            Переглянути
+          </button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   function renderModal(inv) {
@@ -192,6 +253,11 @@
     if (existing) existing.remove();
   }
 
+  function setTab(t) {
+    activeTab = t;
+    ZAP.render();
+  }
+
   function setFilter(f) {
     filter = f;
     ZAP.render();
@@ -238,6 +304,6 @@
 
   ZAP.pages = ZAP.pages || {};
   ZAP.pages.home = {
-    render, load, setFilter, openModal, closeModal, deleteInv, startListening,
+    render, load, setTab, setFilter, openModal, closeModal, deleteInv, startListening,
   };
 })();

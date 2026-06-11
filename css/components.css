@@ -152,7 +152,7 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   border-radius: 20px; padding: 5px 15px; font-size: .8rem;
   transition: all .2s var(--ease); cursor: pointer;
 }
-.pill.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+.pill.on { background: var(--gold-light); color: var(--ink); border-color: var(--gold); }
 .pill:hover:not(.on) { border-color: var(--gold); color: var(--gold); }
 .pill-wrap { position: relative; display: inline-block; }
 .pill-count {
@@ -163,6 +163,27 @@ input[type="file"] { padding: 8px; font-size: .9rem; }
   line-height: 1;
 }
 .pill.on .pill-count { background: rgba(255,255,255,.3); color: #fff; }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--warm); border-radius: var(--radius-sm); padding: 4px;
+}
+.tab {
+  flex: 1; padding: 10px 16px; border: none; background: transparent;
+  border-radius: var(--radius-sm); cursor: pointer; font-size: .88rem;
+  color: var(--muted); transition: all .2s var(--ease); font-weight: 500;
+  position: relative;
+}
+.tab.active { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.tab:hover:not(.active) { color: var(--ink); }
+.tab-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; font-size: .65rem; font-weight: 700;
+  background: var(--red); color: #fff; margin-left: 6px;
+  line-height: 1;
+}
 
 /* ── Notification badge ── */
 .notif-badge {
