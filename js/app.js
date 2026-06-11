@@ -167,13 +167,13 @@
         }
         return;
       }
-      if (isPageChange) {
-        console.log('[DASH] isPageChange=true, calling load()');
+      if (isPageChange || !ZAP.pages.dashboard._loaded) {
+        console.log('[DASH] load needed — isPageChange:', isPageChange, '_loaded:', ZAP.pages.dashboard._loaded);
         app.innerHTML = ZAP.utils.spinner();
         await ZAP.pages.dashboard.load();
         console.log('[DASH] load() done, now rendering');
       } else {
-        console.log('[DASH] isPageChange=false, skipping load()');
+        console.log('[DASH] no load needed, using cached data');
       }
       app.innerHTML = ZAP.pages.dashboard.render();
       ZAP.pages.dashboard.drawCharts();

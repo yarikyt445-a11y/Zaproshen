@@ -15,6 +15,7 @@
   let invitePage = 0;
   let _loadingGuard = false;
   let loadingError = false;
+  let _loaded = false;
   const PAGE_SIZE = 15;
   const INVITE_PAGE_SIZE = 30;
 
@@ -47,6 +48,7 @@
       console.log('[DASH] reports done:', reports.length);
       invites = (data.personalInvites || []).concat(data.groupInvites || [])
         .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+      _loaded = true;
       console.log('[DASH] load() complete, total invites:', invites.length, Date.now());
     } catch (e) {
       clearTimeout(timeout);
