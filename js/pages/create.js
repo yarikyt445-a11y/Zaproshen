@@ -57,7 +57,7 @@
       ` : `
         <div>
           <label class="lbl">Кому</label>
-          <input id="f-to" placeholder="Ім'я отримувача" value="${ZAP.utils.esc(formState.to || '')}" maxlength="15" oninput="ZAP.pages.create.chk()"/>
+          <input id="f-to" placeholder="Ім'я отримувача" value="${ZAP.utils.esc(formState.to || '')}" maxlength="25" oninput="ZAP.pages.create.chk()"/>
         </div>
       `}
 

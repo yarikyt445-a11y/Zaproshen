@@ -79,7 +79,7 @@
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);
-  padding: 20px 20px 16px;
+  padding: 20px 20px 28px;
   text-align: center; position: relative;
 }
 .envelope-top::after {
@@ -94,7 +94,7 @@
 .envelope-type {
   font-size: .68rem; letter-spacing: .18em;
   color: rgba(255,255,255,.5); text-transform: uppercase;
-  font-weight: 500; margin-bottom: 10px;
+  font-weight: 500; margin-bottom: 14px;
 }
 .envelope-to {
   font-family: var(--font-heading); font-style: italic;
@@ -121,6 +121,9 @@
   font-family: var(--font-heading); font-style: italic;
   font-size: .92rem; line-height: 1.7; color: var(--ink); padding-left: 8px;
   overflow-wrap: break-word; word-break: break-word; min-width: 0;
+}
+.msg-block .toggle-more-btn {
+  display: block; margin-top: 4px; padding-left: 8px;
 }
 
 /* ── Result screen ── */

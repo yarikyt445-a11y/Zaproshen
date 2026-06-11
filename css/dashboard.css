@@ -119,12 +119,16 @@
 
 /* ── Truncated text with show more ── */
 .truncated-text {
-  max-height: 3.2em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  position: relative;
-  transition: max-height .3s ease;
+  transition: all .3s ease;
 }
-.truncated-text.expanded { max-height: none; }
+.truncated-text.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+}
 .toggle-more-btn {
   background: none; border: none; color: var(--gold);
   font-size: .72rem; cursor: pointer; padding: 2px 0;
