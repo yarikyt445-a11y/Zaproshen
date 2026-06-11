@@ -63,6 +63,8 @@
       requestAnimationFrame(() => {
         document.querySelector('.invite-envelope')?.scrollIntoView({ block: 'center' });
       });
+      lastPage = route.page;
+      lastParamsStr = JSON.stringify(route.params);
       return;
     }
 
@@ -75,6 +77,8 @@
       requestAnimationFrame(() => {
         document.querySelector('.invite-envelope')?.scrollIntoView({ block: 'center' });
       });
+      lastPage = route.page;
+      lastParamsStr = JSON.stringify(route.params);
       return;
     }
 
@@ -447,6 +451,10 @@
     const user = ZAP.auth.getUser();
     if (!user) { unreadCount = 0; return; }
     unreadCount = await ZAP.notifications.getUnreadCount(user.uid);
+    // Update DOM badge immediately
+    const badge = document.querySelector('.notif-badge');
+    if (badge) badge.textContent = unreadCount > 0 ? unreadCount : '';
+    if (unreadCount === 0 && badge) badge.remove();
   }
 
   // ── Task 4: Delete a notification inline without full re-render ──
@@ -471,7 +479,7 @@
 
   // ── Init ──
   ZAP.render = render;
-  ZAP.app = { deleteNotification };
+  ZAP.app = { deleteNotification, updateUnreadCount };
 
   // Initialize delegated truncation handler once
   ZAP.utils.initTruncHandler();

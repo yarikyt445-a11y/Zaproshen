@@ -386,7 +386,10 @@
     
     // Clean up notification
     const user = ZAP.auth.getUser();
-    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'invite', 'inviteId', invId);
+    if (user) {
+      await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'invite', 'inviteId', invId);
+      if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
+    }
 
     // Notify creator
     if (invData?.creatorUid) {
@@ -426,14 +429,17 @@
 
     // Clean up notification
     const user = ZAP.auth.getUser();
-    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'invite', 'inviteId', invId);
+    if (user) {
+      await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'invite', 'inviteId', invId);
+      if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
+    }
 
     // Notify creator
     if (invData?.creatorUid) {
       const responderName = ZAP.auth.getProfile()?.name || invData.to || 'Хтось';
       await ZAP.notifications.addNotification(invData.creatorUid, {
         type: 'invite-reschedule',
-        title: `${icon('calendar-blank', 14)} Запит на перенесення`,
+        title: `Запит на перенесення`,
         body: `${responderName} хоче перенести зустріч`,
         inviteId: invId,
       });
@@ -463,7 +469,10 @@
     await ZAP.db.joinGroupInvite(groupData.id, participant);
 
     // Clean up notification
-    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'group-invite', 'inviteId', groupData.id);
+    if (user) {
+      await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'group-invite', 'inviteId', groupData.id);
+      if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
+    }
 
     ZAP.utils.boom();
     answered = true;
@@ -485,7 +494,10 @@
     await ZAP.db.joinGroupInvite(groupData.id, participant);
 
     // Clean up notification
-    if (user) await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'group-invite', 'inviteId', groupData.id);
+    if (user) {
+      await ZAP.notifications.deleteNotificationsByPayload(user.uid, 'group-invite', 'inviteId', groupData.id);
+      if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
+    }
 
     answered = true;
     answerStatus = 'declined';

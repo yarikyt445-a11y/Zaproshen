@@ -255,6 +255,7 @@
       requests = requests.filter(r => r.fromUid !== fromUid);
       friends = await ZAP.db.getFriends(me.uid);
       await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
+      if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
       ZAP.utils.toast(`Друга додано`, 'success');
       ZAP.render();
     } catch (e) {
@@ -273,6 +274,7 @@
     await ZAP.db.declineFriendRequest(me.uid, fromUid);
     requests = requests.filter(r => r.fromUid !== fromUid);
     await ZAP.notifications.deleteNotificationsByPayload(me.uid, 'friend-request', 'fromUid', fromUid);
+    if (ZAP.app.updateUnreadCount) await ZAP.app.updateUnreadCount();
     ZAP.render();
   }
 
