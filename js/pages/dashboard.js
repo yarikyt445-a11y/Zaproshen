@@ -13,6 +13,10 @@
   const PAGE_SIZE = 15;
 
   async function load() {
+    if (!ZAP.auth.isAdmin() && !ZAP.auth.isModerator()) {
+      ZAP.router.go('home');
+      return;
+    }
     loading = true;
     try {
       const data = await ZAP.db.getStats();
