@@ -500,7 +500,6 @@
                   <div>
                     <div style="font-weight:500">${ZAP.utils.esc(u.name)}</div>
                     <div style="font-size:.72rem;color:var(--muted)">${ZAP.utils.esc(u.uniqueId)}</div>
-                    <div style="font-size:.7rem;color:var(--gold);margin-top:2px">${icon('eye',12)} ${ZAP.utils.esc(u.currentAction || 'Переглядає сайт')}</div>
                   </div>
                 </div>
               </td>
@@ -1065,7 +1064,6 @@
               <div>
                 <div style="font-weight:500">${ZAP.utils.esc(u.name)}</div>
                 <div style="font-size:.72rem;color:var(--muted)">${ZAP.utils.esc(u.uniqueId)}</div>
-                <div style="font-size:.7rem;color:var(--gold);margin-top:2px">${icon('eye',12)} ${ZAP.utils.esc(u.currentAction || 'Переглядає сайт')}</div>
               </div>
             </div>
           </td>
