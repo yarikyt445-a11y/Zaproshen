@@ -76,6 +76,7 @@
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
+  align-self: flex-start;
 }
 .envelope-top {
   background: linear-gradient(135deg, #1a120a 0%, #2d2010 100%);

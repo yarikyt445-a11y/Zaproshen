@@ -29,7 +29,7 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
   border-radius: var(--radius-card); padding: 9px; font-size: .95rem; width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.btn-no:hover { background: var(--red-bg); }
+.btn-no:hover { background: var(--red-bg); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(192,57,43,.15); }
 
 .btn-reschedule {
   background: rgba(var(--gold-rgb),.1); color: var(--gold);
@@ -37,7 +37,7 @@ button { cursor: pointer; font-family: var(--font-body); transition: all .2s var
   padding: 9px; font-size: .95rem; width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.btn-reschedule:hover { background: rgba(var(--gold-rgb),.18); }
+.btn-reschedule:hover { background: rgba(var(--gold-rgb),.18); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--gold-rgb),.2); }
 
 .btn-outline {
   background: none; border: 1.5px solid var(--border); border-radius: var(--radius-pill);
