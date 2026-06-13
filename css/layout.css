@@ -57,11 +57,11 @@
 
 /* ── Invite page background ── */
 .invite-bg {
-  min-height: auto;
+  height: 100vh;
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;
   padding: 16px 16px;
-  overflow: hidden;
+  overflow: clip;
   background:
     radial-gradient(ellipse at 20% 20%, rgba(201,146,42,.07) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 80%, rgba(45,122,79,.06) 0%, transparent 60%),
@@ -73,7 +73,7 @@
   background: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  overflow: visible;
   animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
   display: flex;
   flex-direction: column;
