@@ -626,11 +626,10 @@
     const bg = document.querySelector('.invite-bg');
     const env = document.querySelector('.invite-envelope');
     if (!bg || !env) return;
-    if (env.scrollHeight > window.innerHeight) {
-      bg.style.overflowY = 'auto';
-    } else {
-      bg.style.overflowY = '';
-    }
+    const rect = env.getBoundingClientRect();
+    const margin = 8;
+    const fits = rect.top >= margin && rect.bottom <= window.innerHeight - margin;
+    bg.style.overflowY = fits ? '' : 'auto';
   }
   function initScrollCheck() {
     checkScroll();
