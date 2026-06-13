@@ -180,14 +180,14 @@
           <div style="display:flex;justify-content:center;gap:16px;margin-top:28px;padding:18px 0;border-top:1px solid var(--border)">
             ${ZAP.auth.getUser() ? `
               <button onclick="ZAP.router.go('home')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline;font-weight:400">
                 ← Меню
               </button>
             ` : ''}
             ${!answered ? `
               <button onclick="ZAP.pages.invite.showReport('${invData.id}')"
-                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline">
-                ${icon('warning', 12)} Поскаржитися
+                style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:underline;font-weight:400">
+                ${icon('warning', 10)} Поскаржитися
               </button>
             ` : ''}
           </div>
