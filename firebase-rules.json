@@ -1,0 +1,78 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+      ".indexOn": ["createdAt"],
+      "$uid": {
+        ".read": true,
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'"
+      }
+    },
+    "logins": {
+      ".read": true,
+      "$login": {
+        ".write": "auth != null"
+      }
+    },
+    "ids": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null"
+      }
+    },
+    "invites": {
+      ".read": "auth != null",
+      "$invId": {
+        ".write": "auth != null && root.child('invites').child($invId).child('creatorUid').val() === auth.uid"
+      }
+    },
+    "statuses": {
+      ".read": "auth != null",
+      "$invId": {
+        ".write": "auth != null"
+      }
+    },
+    "reschedule": {
+      ".read": "auth != null",
+      "$invId": {
+        ".write": "auth != null"
+      }
+    },
+    "user-invites": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
+      }
+    },
+    "friends": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "friend-requests": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null",
+        ".indexOn": ["createdAt", "read"]
+      }
+    },
+    "group-invites": {
+      ".read": "auth != null",
+      "$invId": {
+        ".write": "auth != null"
+      }
+    },
+    "reports": {
+      ".read": "root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator'",
+      ".write": "auth != null",
+      ".indexOn": ["createdAt", "status"]
+    }
+  }
+}
