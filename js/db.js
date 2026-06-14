@@ -189,12 +189,12 @@
     const existing = await db().ref('friends/' + fromUid + '/' + toUid).get();
     if (existing.exists()) throw new Error('Вже у друзях');
 
-    // Check if request already sent (check own notifications)
-    const notifsSnap = await db().ref('notifications/' + fromUid)
+    // Check if request already sent (check recipient's notifications)
+    const notifsSnap = await db().ref('notifications/' + toUid)
       .orderByChild('type').equalTo('friend-request').get();
     if (notifsSnap.exists()) {
       let alreadySent = false;
-      notifsSnap.forEach(c => { if (c.val().toUid === toUid) alreadySent = true; });
+      notifsSnap.forEach(c => { if (c.val().fromUid === fromUid) alreadySent = true; });
       if (alreadySent) throw new Error('Запит вже надіслано');
     }
 
@@ -225,9 +225,6 @@
     await db().ref('friends/' + myUid + '/' + fromUid).set({
       uid: fromUid, name: theirProfile?.name || '', addedAt: Date.now(),
     });
-
-    // Remove own friend-requests
-    await db().ref('friend-requests/' + myUid + '/' + fromUid).remove();
 
     // Notify the other user to add us
     await ZAP.notifications.addNotification(fromUid, {
