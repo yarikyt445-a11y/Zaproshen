@@ -41,27 +41,27 @@
       }
     },
     "invites": {
-      ".read": true,
+      ".read": "auth != null",
+      "$invId": {
+        ".write": "auth != null && root.child('invites').child($invId).child('creatorUid').val() === auth.uid"
+      }
+    },
+    "statuses": {
+      ".read": "auth != null",
       "$invId": {
         ".write": "auth != null"
       }
     },
-    "statuses": {
-      ".read": true,
-      "$invId": {
-        ".write": true
-      }
-    },
     "reschedule": {
-      ".read": true,
+      ".read": "auth != null",
       "$invId": {
-        ".write": true
+        ".write": "auth != null"
       }
     },
     "user-invites": {
       "$uid": {
         ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin'",
-        ".write": "auth != null"
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin')"
       }
     },
     "friends": {
@@ -84,7 +84,7 @@
       }
     },
     "group-invites": {
-      ".read": true,
+      ".read": "auth != null",
       "$invId": {
         ".write": "auth != null"
       }
