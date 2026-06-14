@@ -100,7 +100,8 @@
     "group-invites": {
       ".read": "auth != null",
       "$invId": {
-        ".write": "auth != null && (!data.exists() || data.child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')"
+        ".write": "auth != null && (!data.exists() || data.child('creatorUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'founder' || root.child('users').child(auth.uid).child('role').val() === 'tech-admin' || root.child('users').child(auth.uid).child('role').val() === 'moderator')",
+        ".validate": "newData.child('creatorUid').val() === auth.uid || !newData.child('creatorUid').exists()"
       }
     },
     "reports": {
